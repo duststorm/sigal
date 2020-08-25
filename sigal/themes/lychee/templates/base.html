@@ -284,6 +284,16 @@
 		    timeout = setTimeout(photo_hide, 2500);
 	    */
         };
+        
+        function show_photo(photoElement)
+        {
+            photo_current = photoElement;
+            update_imageview( photo_current.attr('data-url') );
+            // TODO or view_photo() ??
+            view_photo();
+            
+            photo_show();  // TODO naming of this method and the other... a bit confusing
+        }
 
         function photo_getID()
         {
@@ -545,10 +555,18 @@
         // TODO
         function photo_previous()
         {
+            let currPhoto = photo_getCurrent();
+            let prevPhoto = photo_previousPhoto(currPhoto);
+            if (prevPhoto.length > 0)
+                show_photo(prevPhoto);
         }
         
         function photo_next()
         {
+            let currPhoto = photo_getCurrent();
+            let nextPhoto = photo_nextPhoto(currPhoto);
+            if (nextPhoto.length > 0)
+                show_photo(nextPhoto);
         }
         
         function photo_getByID(photoID)
@@ -680,6 +698,10 @@
 		    let imageview = $('#imageview');
 		    imageview.html(ret.html);
 		    //tabindex.makeFocusable(lychee.imageview);
+		    
+		    // TODO required here because at init these are not created yet
+            $('.arrow_wrapper--previous').click(photo_previous);
+            $('.arrow_wrapper--next').click(photo_next);
 
 		    photo_onresize();
 

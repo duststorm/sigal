@@ -42,12 +42,7 @@
 <script>
     function onPictureClicked(event)
     {
-        photo_current = $(event.currentTarget);
-        update_imageview( photo_current.attr('data-url') );
-        // TODO or view_photo() ??
-        view_photo();
-        
-        photo_show();
+        show_photo($(event.currentTarget));
     };
 
 	// init
@@ -66,6 +61,7 @@
 	    $('.content').removeClass('view');
 	    header_setMode('album');
 
+        // TODO at this point these are not created yet...
         $('.arrow_wrapper--previous').click(photo_previous);
         $('.arrow_wrapper--next').click(photo_next);
         

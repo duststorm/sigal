@@ -175,11 +175,11 @@ class Media:
         stat = os.stat(self.src_path)
         return datetime.fromtimestamp(stat.st_mtime)
 
-
 class Image(Media):
     """Gather all informations on an image file."""
 
     type = 'image'
+
 
     @cached_property
     def date(self):
@@ -252,6 +252,19 @@ class Video(Media):
             self.dst_path = join(settings['destination'], path, base + ext)
         else:
             self.mime = get_mime(ext)
+            
+    @cached_property
+    def size(self):
+        """The dimensions of the resized image."""
+        # TODO
+        return {'width': 100, 'height': 100}
+
+    @cached_property
+    def thumb_size(self):
+        """The dimensions of the thumbnail image."""
+        # TODO
+        return {'width': 100, 'height': 100}
+
 
 
 class Album:

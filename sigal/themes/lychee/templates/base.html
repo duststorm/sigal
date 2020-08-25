@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="{{ settings.html_language }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>{{ album.title|striptags }}</title>
+    <meta name="description" content="">
+    <meta name="author" content="{{ album.author }}">
+    <meta name="viewport" content="width=device-width">
+
+    <link type="text/css" rel="stylesheet" href="{{ theme.url }}/css/main.css">
+    <link type="text/css" rel="stylesheet" href="{{ theme.url }}/css/user.css">
+
+    <!--link rel="stylesheet" href="{{ theme.url }}/css/normalize.css">
+    <link rel="stylesheet" href="{{ theme.url }}/themes/classic/galleria.classic.css">
+    <link rel="stylesheet" href="{{ theme.url }}/css/style.css"-->
+
+    {% block extra_head %}{% endblock extra_head %}
+    {% include 'analytics.html' %}
+  </head>
+  
+  <body>
+    <div id="container" style="padding-bottom: 62px;">
+
+    <!-- Loading -->
+    <div id="loading" style="display: none;"></div>
+    
+    {% include 'svg_icons.html' %}
+
+    {% include 'decrypt.html' %}
+    {% include 'gtm.html' %}
+    <div class="container">
+    <!--
+      <header class="header">
+        <h1><a href="{{ album.index_url }}">{{ index_title }}</a></h1>
+
+        {% include 'links.html' %}
+        {% include 'breadcrumb.html' %}
+        {% if album.breadcrumb %}
+        <hr>
+        {% endif %}
+      </header>
+    -->
+      
+      
+      
+      
+      <header class="header">
+        <div class="header__toolbar header__toolbar--albums">
+            <a class="header__title header__title--editable">{{ album.title }}</a>
+
+            <a class="header__clear">×</a>
+            <a class="header__divider"></a>
+        </div>
+
+        <div class="header__toolbar header__toolbar--album">
+            <a class="button" id="button_back_home" title="Close Album">
+                <svg class="iconic"><use xlink:href="#chevron-left"></use></svg>
+            </a>
+
+            <a class="header__title header__title--editable">{{ album.title }}</a>
+
+            <a class="button" id="button_archive" title="Download Album">
+                <svg class="iconic"><use xlink:href="#cloud-download"></use></svg>
+            </a>
+            <a class="button" id="button_fs_album_enter" title="Enter Fullscreen">
+                <svg class="iconic"><use xlink:href="#fullscreen-enter"></use></svg>
+            </a>
+            <a class="button" id="button_fs_album_exit" title="Exit Fullscreen" style="display: none;">
+                <svg class="iconic"><use xlink:href="#fullscreen-exit"></use></svg>
+            </a>
+            <a class="header__divider"></a>
+        </div>
+
+        <div class="header__toolbar header__toolbar--photo header__toolbar--visible">
+            <a class="button" id="button_back" title="Close Photo">
+                <svg class="iconic"><use xlink:href="#chevron-left"></use></svg>
+            </a>
+
+            <a class="header__title header__title--editable">{{ album.title }}</a>
+
+            <a class="button" id="button_download" title="Download Photo">
+                <svg class="iconic"><use xlink:href="#cloud-download"></use></svg>
+            </a>
+            <a class="button" id="button_fs_enter" title="Enter Fullscreen">
+                <svg class="iconic"><use xlink:href="#fullscreen-enter"></use></svg>
+            </a>
+            <a class="button" id="button_fs_exit" title="Exit Fullscreen" style="display: none;">
+                <svg class="iconic"><use xlink:href="#fullscreen-exit"></use></svg>
+            </a>
+            <a class="header__divider"></a>
+        </div>
+
+      </header>
+      
+      
+      
+    <div class="content contentZoomIn" style="min-height: calc(((100vh - 50px) - 33px) - 62px);">
+      <div class="justified-layout">
+    
+            {% block content %}{% endblock content %}
+
+
+      </div>
+      {% include 'footer.html' %}
+    </div>
+    
+    <!-- ImageView -->
+    <div id="imageview"></div>
+    
+    
+    <!-- JS -->
+    <script type="text/javascript" src="{{ theme.url }}/js/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ theme.url }}/js/require.js"></script>
+    <script async="" type="text/javascript" src="{{ theme.url }}/js/lazysizes.min.js"></script>
+    <script type="text/javascript" src="{{ theme.url }}/js/justified-layout.min.js"></script>
+    
+    <script>
+        function lychee_animate(obj, animation)
+        {
+            let animations = [
+                ['fadeIn', 'fadeOut'],
+                ['contentZoomIn', 'contentZoomOut']
+            ];
+
+            if (!obj.jQuery) obj = $(obj);
+
+            for (let i = 0; i < animations.length; i++) {
+                for (let x = 0; x < animations[i].length; x++) {
+                    if (animations[i][x] == animation) {
+                        obj.removeClass(animations[i][0] + ' ' + animations[i][1]).addClass(animation);
+                        return true
+                    }
+                }
+            }
+
+            return false
+        };
+        
+        function lychee_escapeHTML(html = '')
+        {
+            // Ensure that html is a string
+            html += '';
+
+            // Escape all critical characters
+            html = html.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;')
+                .replace(/`/g, '&#96;');
+
+            return html
+        };
+        
+        function lychee_html(literalSections, ...substs)
+        {
+            // Use raw literal sections: we don’t want
+            // backslashes (\n etc.) to be interpreted
+            let raw = literalSections.raw;
+            let result = '';
+
+            substs.forEach((subst, i) => {
+
+                // Retrieve the literal section preceding
+                // the current substitution
+                let lit = raw[i];
+
+                // If the substitution is preceded by a dollar sign,
+                // we escape special characters in it
+                if (lit.slice(-1) === '$') {
+                    subst = lychee_escapeHTML(subst);
+                    lit = lit.slice(0, -1)
+                }
+
+                result += lit;
+                result += subst
+
+            });
+
+            // Take care of last literal section
+            // (Never fails, because an empty template string
+            // produces one literal section, an empty string)
+            result += raw[raw.length - 1];
+
+            return result
+        };
+        
+        function build_iconic(icon, classes = '')
+        {
+	        let html = '';
+
+	        html += lychee_html`<svg class='iconic ${classes}'><use xlink:href='#${icon}' /></svg>`;
+
+	        return html
+        };
+
+
+        // TODO autoplay option is never really used
+        function build_imageview(data, visibleControls, autoplay)
+        {
+	        let html = '';
+	        let thumb = '';
+
+/*
+	        if (data.type.indexOf('video') > -1) {
+		        html += lychee_html`<video width="auto" height="auto" id='image' controls class='${visibleControls === true ? '' : 'full'}' autobuffer ${autoplay ? 'autoplay' : ''} data-tabindex='${tabindex.get_next_tab_index()}'><source src='${data.url}'>Your browser does not support the video tag.</video>`
+	        } else if (data.type.indexOf('raw') > -1 && data.medium === '') {
+		        html += lychee_html`<img id='image' class='${visibleControls === true ? '' : 'full'}' src='img/placeholder.png' draggable='false' alt='big' data-tabindex='${tabindex.get_next_tab_index()}'>`
+	        } else {
+*/
+		        let img = '';
+
+		        // See if we have the thumbnail loaded...
+		        $('.photo').each(function () {
+			        if ($(this).attr('data-id') && $(this).attr('data-id') == data.id) {
+				        let thumbimg = $(this).find('img');
+				        if (thumbimg.length > 0) {
+					        thumb = thumbimg[0].currentSrc ? thumbimg[0].currentSrc : thumbimg[0].src;
+					        return false
+				        }
+			        }
+		        });
+
+		        if (data.hasOwnProperty('medium') && data.medium !== '') {
+			        let medium = '';
+
+			        if (data.hasOwnProperty('medium2x') && data.medium2x !== '') {
+				        medium = `srcset='${data.medium} ${parseInt(data.medium_dim, 10)}w, ${data.medium2x} ${parseInt(data.medium2x_dim, 10)}w'`;
+			        }
+			        img = `<img id='image' class='${visibleControls === true ? '' : 'full'}' src='${data.medium}' ` + medium + `  draggable='false' alt='medium'}'>`
+
+		        } else {
+			        img = `<img id='image' class='${visibleControls === true ? '' : 'full'}' src='${data.url}' draggable='false' alt='big'}'>`
+		        }
+
+
+		        html += lychee_html`${img}`;
+
+                // TODO overlay with exif data and filename, not critical
+		        //if (lychee.image_overlay) html += build_overlay_image(data);
+
+//	        }
+
+	        html += `
+			        <div class='arrow_wrapper arrow_wrapper--previous'><a id='previous'>${build_iconic('caret-left')}</a></div>
+			        <div class='arrow_wrapper arrow_wrapper--next'><a id='next'>${build_iconic('caret-right')}</a></div>
+			        `;
+
+	        return { html, thumb }
+
+        };
+
+        // Called when image is clicked
+        function update_imageview(image_url)
+        {        
+            let imageview = $('#imageview');
+            // TODO feed correct data (of photo clicked)
+            // eg $(".photo").first().attr("data-id")
+            let data = {
+                id: image_url,
+                url: image_url
+            };
+    		imageview.html(build_imageview(data, true).html);
+		    imageview.find('.arrow_wrapper').remove();  // TODO why??
+		    imageview.addClass('fadeIn').show();
+		    photo_onresize();
+
+		    // Render Sidebar
+		    //let structure = sidebar.createStructure.photo(data);
+		    //let html = sidebar.render(structure);
+
+		    // Fullscreen
+		    let timeout = null;
+
+        /*
+            // TODO ?
+		    $(document).bind('mousemove', function() {
+			    clearTimeout(timeout);
+			    photo_show();
+			    timeout = setTimeout(photo_hide, 2500)
+		    });
+		    timeout = setTimeout(photo_hide, 2500);
+	    */
+        };
+
+        function photo_getID()
+        {
+            // Get current photo id
+            return photo_getCurrent().attr('data-id');
+        }
+
+        function photos_get()
+        {
+            return $('div .photo');
+        }
+
+        photo_current = null;
+
+        function photo_getCurrent()
+        {
+            if (photo_current === null)
+                photo_current = photos_get().first();  // set to first picture
+            return photo_current;
+        }
+        
+        function photo_onresize()
+        {
+		    //if (!photo.json || photo.json.medium === '' || !photo.json.medium2x || photo.json.medium2x === '') return;
+
+		    // Calculate the width of the image in the current window without
+		    // borders and set 'sizes' to it.
+
+		    let currPhoto = photo_getCurrent();
+		    
+		    //let imgWidth = parseInt(photo.json.medium_dim);
+		    //let imgHeight = photo.json.medium_dim.substr(photo.json.medium_dim.lastIndexOf('x') + 1);
+		    let imgWidth = parseInt(currPhoto.attr('data-width'));
+		    let imgHeight = parseInt(currPhoto.attr('data-height'));
+		    let containerWidth = $(window).outerWidth();
+		    let containerHeight = $(window).outerHeight();
+
+		    // Image can be no larger than its natural size, but it can be
+		    // smaller depending on the size of the window.
+		    let width = (imgWidth < containerWidth) ? imgWidth : containerWidth;
+		    let height = (width * imgHeight) / imgWidth;
+		    if (height > containerHeight) {
+			    width = (containerHeight * imgWidth) / imgHeight
+		    }
+
+		    $('img#image').attr('sizes', width + 'px');
+	    };
+    
+    	function photo_show()
+    	{
+		    // Change header
+		    $('.content').addClass('view');
+		    header_setMode('photo');
+
+		    // Make body not scrollable
+		    // use bodyScrollLock package to enable locking on iOS
+		    // Simple overflow: hidden not working on iOS Safari
+		    // Only the info pane needs scrolling
+		    // Touch event for swiping of photo still work
+
+		    // TODO scrollLock.disablePageScroll($('.sidebar__wrapper').get());
+
+		    // Fullscreen
+		    let timeout = null;
+		    $(document).bind('mousemove', function () {
+			    clearTimeout(timeout);
+			    // For live Photos: header animtion only if LivePhoto is not playing
+			    //if(!photo.isLivePhotoPlaying() && lychee.header_auto_hide) {
+				    header_show();
+				    timeout = setTimeout(header_hideIfLivePhotoNotPlaying, 2500);
+			    //}
+		    });
+
+            // we also put this timeout to enable it by default when you directly click on a picture.
+		    //if(lychee.header_auto_hide) {
+			    setTimeout(header_hideIfLivePhotoNotPlaying, 2500);
+		    //}
+
+            $('#imageview').show()
+		    lychee_animate($('#imageview'), 'fadeIn')
+	    };
+
+	    function photo_hide()
+	    {
+		    header_show();
+
+		    $('.content').removeClass('view');
+		    header_setMode('album');
+
+		    // Make body scrollable
+		    // TODO scrollLock.enablePageScroll($('.sidebar__wrapper').get());
+
+		    // Disable Fullscreen
+		    $(document).unbind('mousemove');
+		    if ($('video').length) {
+			    $('video')[$('video').length - 1].pause();
+		    }
+
+		    // Hide Photo
+		    lychee_animate($('#imageview'), 'fadeOut');
+		    setTimeout(() => {
+			    $('#imageview').hide();
+			    //view.album.sidebar()
+		    }, 300)
+
+	    };
+	    
+	    // TODO needed for back button?
+	    function lychee_setMode(mode)
+	    {
+            if (mode === 'view') {
+
+                Mousetrap.unbind(['esc', 'command+up']);
+
+                $('#button_back, a#next, a#previous').remove();
+                $('.no_content').remove();
+
+                //lychee.publicMode = true;
+                lychee_viewMode = true
+
+            }
+
+            // just mak
+            //header.bind_back();
+
+        };
+        
+        lychee_viewMode = false;
+        
+        function header_bind()
+        {
+            // TODO we will not be using goto
+            header.dom('#button_back_home')   .on(eventName, function() {
+		        if (!album.json.parent_id) {
+			        lychee.goto();
+		        } else {
+			        lychee.goto(album.getParent());
+		        }
+	        });
+	        header.dom('#button_back')        .on(eventName, function() { lychee.goto(album.getID()) });
+        }
+        
+        function header_setMode(mode)
+        {
+	        switch (mode) {
+		        case 'public':
+
+			        $('.header').removeClass('header--view');
+			        $('.header__toolbar--albums, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map').removeClass('header__toolbar--visible');
+			        $('.header__toolbar--public').addClass('header__toolbar--visible');
+			        //tabindex.makeFocusable(header.dom('.header__toolbar--public'));
+			        //tabindex.makeUnfocusable(header.dom('.header__toolbar--albums, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map'));
+
+			        return true;
+
+		        case 'albums':
+
+			        $('.header').removeClass('header--view');
+			        $('.header__toolbar--public, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map').removeClass('header__toolbar--visible');
+			        $('.header__toolbar--albums').addClass('header__toolbar--visible');
+
+			        //tabindex.makeFocusable(header.dom('.header__toolbar--albums'));
+			        //tabindex.makeUnfocusable(header.dom('.header__toolbar--public, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map'));
+
+			        return true;
+
+		        case 'album':
+
+			        $('.header').removeClass('header--view');
+			        $('.header__toolbar--public, .header__toolbar--albums, .header__toolbar--photo, .header__toolbar--map').removeClass('header__toolbar--visible');
+			        $('.header__toolbar--album').addClass('header__toolbar--visible');
+
+			        //tabindex.makeFocusable(header.dom('.header__toolbar--album'));
+			        //tabindex.makeUnfocusable(header.dom('.header__toolbar--public, .header__toolbar--albums, .header__toolbar--photo, .header__toolbar--map'));
+
+			        return true;
+
+		        case 'photo':
+			        $('.header').addClass('header--view');
+			        $('.header__toolbar--public, .header__toolbar--albums, .header__toolbar--album, .header__toolbar--map').removeClass('header__toolbar--visible');
+			        $('.header__toolbar--photo').addClass('header__toolbar--visible');
+
+			        //tabindex.makeFocusable(header.dom('.header__toolbar--photo'));
+			        //tabindex.makeUnfocusable(header.dom('.header__toolbar--public, .header__toolbar--albums, .header__toolbar--album, .header__toolbar--map'));
+
+			        // Hide More menu if empty (see contextMenu.photoMore)
+			        $('#button_more').show();
+			        //tabindex.makeFocusable($('#button_more'));
+			        /*
+			        if (!(album.isUploadable() ||
+				        (photo.json.hasOwnProperty('downloadable') ? photo.json.downloadable === '1' :
+				        album.json && album.json.downloadable && album.json.downloadable === '1')) &&
+				        !(photo.json.url && photo.json.url !== '')) {
+				        let e = $('#button_more');
+				        e.hide();
+				        //tabindex.makeUnfocusable(e);
+			        }
+			        */
+
+			        // Remove buttons if needed
+			        return true;
+
+	        }
+
+	        return false
+
+        };
+        
+        
+        function header_show()
+        {
+	        $('#imageview').removeClass('full');
+	        $('.header').removeClass('header--hidden');
+
+	        //tabindex.restoreSettings(header.dom());
+
+	        return true
+        };
+        
+        function header_hideIfLivePhotoNotPlaying()
+        {
+	        // Hides the header, if current live photo is not playing
+	        return header_hide();
+        };
+
+        function header_hide()
+        {
+	        //if (visible.photo() && !visible.sidebar() && !visible.contextMenu() && basicModal.visible()===false) {
+
+		        //tabindex.saveSettings(header.dom());
+		        //tabindex.makeUnfocusable(header.dom());
+
+		        $('#imageview').addClass('full');
+		        $('.header').addClass('header--hidden');
+
+		        //photo.updateSizeLivePhotoDuringAnimation();
+
+		        return true
+
+	        //}
+
+	        //return false
+        };
+        
+        
+        // TODO decide this
+        lychee_device_type = 'desktop';
+        //lychee_device_type = 'mobile';
+
+        // TODO I am using jquery .click() directly in some places...
+        function lychee_getEventName()
+        {
+            if (lychee_device_type === 'mobile') {
+                return 'touchend';
+            }
+            return 'click';
+        };
+
+        // TODO
+        function photo_previous()
+        {
+        }
+        
+        function photo_next()
+        {
+        }
+        
+        function photo_getByID(photoID)
+        {
+            return $('[data-id='+photoID+']');
+        }
+        
+        function photo_nextPhoto(photoElement)
+        {
+            // Check with .length whether there is a result
+            return photoElement.next()
+        }
+        
+        function photo_previousPhoto(photoElement)
+        {
+            // Check with .length whether there is a result
+            return photoElement.prev()
+        }
+        
+        // Preload the next and previous photos for better response time
+        function photo_preloadNextPrev(currPhotoID)
+        {
+	        let currPhoto = photo_getByID(currPhotoID);
+	        let previousPhoto = photo_previousPhoto(currPhoto);
+	        let nextPhoto = photo_nextPhoto(currPhoto);
+	        let nextPhotoID = null;
+	        let previousPhotoID = null;
+	        if (nextPhoto.length > 0)
+	            nextPhotoID = nextPhoto.attr('data-id')
+            if (previousPhoto.length > 0)
+	            previousPhotoID = previousPhoto.attr('data-id')
+	        let current2x = null;
+
+	        $('head [data-prefetch]').remove();
+
+	        let preload = function(photoElement) {
+		        let href = '';
+
+                let medium = photoElement.attr('data-big-url');
+                //let medium2x =   // TODO
+                let photoType = photoElement.attr('data-type');
+		        if (medium != null && medium !== '') {
+			        href = medium;
+/*
+			        if (preloadPhoto.medium2x && preloadPhoto.medium2x !== '') {
+				        if (current2x === null) {
+					        let imgs = $('img#image');
+					        current2x = imgs.length > 0 && imgs[0].currentSrc !== null && imgs[0].currentSrc.includes('@2x.')
+				        }
+				        if (current2x) {
+					        // If the currently displayed image uses the 2x variant,
+					        // chances are that so will the next one.
+					        href = preloadPhoto.medium2x
+				        }
+			        }
+*/
+		        } else if (photoType && photoType.indexOf('video') === -1) {
+			        // Preload the original size, but only if it's not a video
+			        href = photoElement.attr('data-url')
+		        }
+
+		        if (href !== '') {
+			        if (photo_supportsPrefetch === null) {
+				        // Copied from https://www.smashingmagazine.com/2016/02/preload-what-is-it-good-for/
+				        let DOMTokenListSupports = function(tokenList, token) {
+					        if (!tokenList || !tokenList.supports) {
+						        return null;
+					        }
+					        try {
+						        return tokenList.supports(token);
+					        } catch (e) {
+						        if (e instanceof TypeError) {
+							        console.log('The DOMTokenList doesn\'t have a supported tokens list');
+						        } else {
+							        console.error('That shouldn\'t have happened');
+						        }
+					        }
+				        };
+				        photo_supportsPrefetch = DOMTokenListSupports(document.createElement('link').relList, 'prefetch');
+			        }
+
+			        if (photo_supportsPrefetch) {
+				        $('head').append(lychee_html`<link data-prefetch rel="prefetch" href="${ href }">`)
+			        } else {
+				        // According to https://caniuse.com/#feat=link-rel-prefetch,
+				        // as of mid-2019 it's mainly Safari (both on desktop and mobile)
+				        (new Image()).src = href
+			        }
+		        }
+	        };
+
+	        if (nextPhotoID && nextPhotoID !== '') {
+		        preload(nextPhoto)
+	        }
+	        if (previousPhotoID && previousPhotoID !== '') {
+		        preload(previousPhoto)
+	        }
+        };
+        
+        function visible_photo()
+        {
+	        if ($('#imageview.fadeIn').length>0) return true;
+	        return false
+        };
+
+        function visible_album()
+        {
+        	if ($('.header').find('.header__toolbar--album').hasClass('header__toolbar--visible')) return true;
+        	return false
+        };
+        
+        function visible_header()
+        {
+            if ($('.header').hasClass('header--hidden')===true) return false;
+        	return true
+        };
+        
+        //view.photo.photo()  a better name would be init_photo
+        function view_photo(autoplay = true)
+        {
+		    let currPhoto = photo_getCurrent();
+            let image_url = currPhoto.attr('data-url');
+            let photo_data = {
+                id: image_url,
+                url: image_url
+            };
+            // TODO duplicate of update_imageview() ?
+		    let ret = build_imageview(photo_data, visible_header(), autoplay);
+		    let imageview = $('#imageview');
+		    imageview.html(ret.html);
+		    //tabindex.makeFocusable(lychee.imageview);
+
+		    photo_onresize();
+
+		    let $nextArrow = imageview.find('a#next');
+		    let $previousArrow = imageview.find('a#previous');
+		    
+		    let hasNext = photo_nextPhoto(currPhoto).length > 0;
+		    let hasPrevious = photo_previousPhoto(currPhoto).length > 0;
+
+		    let img = $('img#image');
+		    if (img.length > 0) {
+			    if (!img[0].complete || (img[0].currentSrc !== null && img[0].currentSrc === '')) {
+				    // Image is still loading.  Display the thumb version in the
+				    // background.
+				    if (ret.thumb !== '') {
+					    img.css('background-image', lychee_html`url("${ret.thumb}")`)
+				    }
+
+				    // Don't preload next/prev until the requested image is
+				    // fully loaded.
+				    img.on('load', function () {
+					    photo_preloadNextPrev(photo_getID())
+				    })
+			    } else {
+				    photo_preloadNextPrev(photo_getID())
+			    }
+		    }
+
+		    if (hasNext === false || lychee_viewMode === true) {
+			    $nextArrow.hide()
+		    } else {
+			    let nextPhoto = photo_nextPhoto(currPhoto);
+
+			    // Check if thumbUrl exists (for videos w/o ffmpeg, we add a play-icon)
+			    let thumbUrl = nextPhoto.attr('data-thumb-url');
+
+                // TODO checking for uploads/thumb/ in path is wrong
+			    /*if (thumbUrl === 'uploads/thumb/' && nextPhoto.type.indexOf('video') > -1) {
+				    thumbUrl = 'img/play-icon.png'
+			    }*/
+			    $nextArrow.css('background-image', lychee_html`linear-gradient(to bottom, rgba(0, 0, 0, .4), rgba(0, 0, 0, .4)), url("${thumbUrl}")`)
+
+		    }
+
+		    if (hasPrevious === false || lychee_viewMode === true) {
+			    $previousArrow.hide()
+		    } else {
+			    let previousPhoto = photo_previousPhoto(currPhoto);
+
+			    // Check if thumbUrl exists (for videos w/o ffmpeg, we add a play-icon)
+			    let thumbUrl = previousPhoto.attr('data-thumb-url');
+
+                // TODO checking for uploads/thumb/ in path is wrong
+			    /*if (thumbUrl === 'uploads/thumb/' && previousPhoto.type.indexOf('video') > -1) {
+				    thumbUrl = 'img/play-icon.png'
+			    }*/
+			    $previousArrow.css('background-image', lychee_html`linear-gradient(to bottom, rgba(0, 0, 0, .4), rgba(0, 0, 0, .4)), url("${thumbUrl}")`)
+
+		    }
+
+	    };
+
+        
+        // TODO?
+        function photo_update_display_overlay()
+        {
+        };
+        
+        function setup_keyboard()
+        {
+            //Mousetrap.addKeycodes({  // TODO  see init.js
+            
+            //Mousetrap.bindGlobal([ 'esc', 'ContextMenu' ],
+        }
+        
+        photo_supportsPrefetch = null;
+
+
+    </script>
+    
+    <script>
+        // view.album.content.justify()
+		function justify()
+		{
+			//if (!album.json || !album.json.photos || album.json.photos === false) return;
+			layout = '1';
+			if (layout === '1') {
+				let containerWidth = parseFloat($('.justified-layout').width(), 10);
+				if (containerWidth == 0) {
+					// Triggered on Reload in photo view.
+					containerWidth = $(window).width() -
+						parseFloat($('.justified-layout').css('margin-left'), 10) -
+						parseFloat($('.justified-layout').css('margin-right'), 10) -
+						parseFloat($('.content').css('padding-right'), 10)
+				}
+
+                // TODO we might also use data-height and data-width from all .photo html elements
+				photos = [
+                  {% for media in album.medias %}
+                  {
+                    height: "{{ media.thumb_size.height }}",
+                    width: "{{ media.thumb_size.width }}",
+                    small: "{{ media.thumbnail }}",
+                    medium: "{{ media.big_url }}",
+                    type: "{{ media.type }}"
+                  },
+                  {% endfor %}
+				]
+				let ratio = [];
+
+				$.each(photos, function (i) {
+					ratio[i] = this.height > 0 ? this.width / this.height : 1;
+					if (this.type && this.type.indexOf('video') > -1) {
+						// Video.  If there's no small and medium, we have
+						// to fall back to the square thumb.
+						if (this.small === '' && this.medium === '') {
+							ratio[i] = 1;
+						}
+					}
+				});
+				let layoutGeometry = require('justified-layout')(ratio, {
+					containerWidth: containerWidth,
+					containerPadding: 0
+				});
+				// if (lychee.admin) console.log(layoutGeometry);
+				$('.justified-layout').css('height', layoutGeometry.containerHeight + 'px');
+				$('.justified-layout > div').each(function (i) {
+					if (!layoutGeometry.boxes[i]) {
+						// Race condition in search.find -- window content
+						// and album.json can get out of sync as search
+						// query is being modified.
+						return false
+					}
+					$(this).css('top', layoutGeometry.boxes[i].top);
+					$(this).css('width', layoutGeometry.boxes[i].width);
+					$(this).css('height', layoutGeometry.boxes[i].height);
+					$(this).css('left', layoutGeometry.boxes[i].left);
+
+					let imgs = $(this).find(".thumbimg > img");
+					if (imgs.length > 0 && imgs[0].getAttribute('data-srcset')) {
+						imgs[0].setAttribute('sizes', layoutGeometry.boxes[i].width + 'px');
+					}
+				});
+			} else if (layout === '2') {
+				let containerWidth = parseFloat($('.unjustified-layout').width(), 10);
+				if (containerWidth == 0) {
+					// Triggered on Reload in photo view.
+					containerWidth = $(window).width() -
+						parseFloat($('.unjustified-layout').css('margin-left'), 10) -
+						parseFloat($('.unjustified-layout').css('margin-right'), 10) -
+						parseFloat($('.content').css('padding-right'), 10)
+				}
+				// For whatever reason, the calculation of margin is
+				// super-slow in Firefox (tested with 68), so we make sure to
+				// do it just once, outside the loop.  Height doesn't seem to
+				// be affected, but we do it the same way for consistency.
+				let margin = parseFloat($('.photo').css('margin-right'), 10);
+				let origHeight = parseFloat($('.photo').css('max-height'), 10);
+				$('.unjustified-layout > div').each(function (i) {
+					if (!album.json.photos[i]) {
+						// Race condition in search.find -- window content
+						// and album.json can get out of sync as search
+						// query is being modified.
+						return false
+					}
+					let ratio = album.json.photos[i].height > 0 ?
+						album.json.photos[i].width / album.json.photos[i].height : 1;
+					if (album.json.photos[i].type && album.json.photos[i].type.indexOf('video') > -1) {
+						// Video.  If there's no small and medium, we have
+						// to fall back to the square thumb.
+						if (album.json.photos[i].small === '' && album.json.photos[i].medium === '') {
+							ratio = 1;
+						}
+					}
+
+					let height = origHeight;
+					let width = height * ratio;
+					let imgs = $(this).find(".thumbimg > img");
+
+					if (width > containerWidth - margin) {
+						width = containerWidth - margin;
+						height = width / ratio;
+					}
+
+					$(this).css('width', width + 'px');
+					$(this).css('height', height + 'px');
+					if (imgs.length > 0 && imgs[0].getAttribute('data-srcset')) {
+						imgs[0].setAttribute('sizes', width + 'px');
+					}
+				});
+			}
+		};
+
+    </script>
+    </div>
+
+    
+    {% block late_js %}{% endblock late_js %}
+    {% include 'piwik.html' %}
+  </body>
+</html>

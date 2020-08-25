@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+
+{% endblock %}
+
+{% block content %}
+
+
+      {% for media in album.medias -%}
+      
+      {# TODO attach all required media info as html5 data attributes #}
+      <div class="photo" data-height="{{ media.size.height }}" data-width="{{ media.size.width }}" data-thumb-height="{{ media.thumb_size.height }}" data-thumb-width="{{ media.thumb_size.width }}" data-type="{{ media.type }}" data-id="{{ media.url }}" data-url="{{ media.url }}" data-thumb-url="{{ media.thumbnail }}" data-big-url="{{ media.big_url }}" data-title="{{ media.title }}" data-exif="{{ media.exif }}">
+            <span class="thumbimg"><img class="lazyload" src="{{ theme.url }}/img/placeholder.png" data-src="{{ media.thumbnail }}" data-srcset="{{ media.thumbnail }} 540w {% if media.big %}, {{ media.big_url }} 1080w {% endif %}" alt="Photo thumbnail" data-overlay="false" draggable="false" sizes="519.9372905257027px" srcset="{{ media.thumbnail }} 540w {% if media.big %}, {{ media.big_url }} 1080w {% endif %}"></span>
+            <div class="overlay">
+	            <h1 title="{{ media.title }}">{{ media.title }}</h1>
+        <a><span title="Camera Date"><svg class="iconic "><use xlink:href="#camera-slr"></use></svg></span>{{ media.exif.datetime }}</a></div>
+            </div>
+      
+      {% endfor %}
+
+    </div></div>
+
+        {% if album.zip %}
+        <div id="additionnal-infos" class="row">
+          <p><a href="{{ album.zip }}"
+                title="Download a zip archive with all images">Download ZIP</a>
+          </p>
+        </div>
+        {% endif %}
+
+        {% if album.description %}
+        <div id="description">
+          {{ album.description }}
+        </div>
+        {% endif %}
+
+{% endblock %}
+
+{% block late_js %}
+
+<script>
+    function onPictureClicked(event)
+    {
+        photo_current = $(event.currentTarget);
+        update_imageview( photo_current.attr('data-url') );
+        // TODO or view_photo() ??
+        photo_show();
+    };
+
+	// init
+	$(document).ready(function()
+	{
+
+        photos_get().each(function (i) {
+            $(this).click(onPictureClicked);
+	    });
+	    
+	    $('#button_back').click(photo_hide);
+	    
+        justify();
+
+        header_show();
+	    $('.content').removeClass('view');
+	    header_setMode('album');
+
+        $('.arrow_wrapper--previous').click(photo_previous);
+        $('.arrow_wrapper--next').click(photo_next);
+        
+        //$('img, #livephoto').click(photo_update_display_overlay);  // TODO?
+        
+        setup_keyboard();
+        
+        // TODO // Fullscreen on mobile
+        
+		// TODO Swipe on mobile
+        //$('#imageview').swipe(
+        
+        // TODO fullscreen
+        //$(document).on('fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange', lychee_fullscreenUpdate);
+        
+        // On resize behaviour
+        $(window).on('resize', function ()
+        {
+    		if(visible_album()) justify();
+	    	if(visible_photo()) photo_onresize();
+	    });
+	});
+</script>
+
+{% endblock %}

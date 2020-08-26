@@ -351,7 +351,24 @@
 
 		    $('img#image').attr('sizes', width + 'px');
 	    };
-    
+
+        function scroll_disable()
+        {
+            if ($('body').attr('data-scroll-lock-locked'))
+            {
+                // Already scroll locked, don't do it again to avoid having to call
+                // scroll_enable() multiple times to enable it again
+                return;
+            }
+            
+            scrollLock.disablePageScroll($('.sidebar__wrapper').get());
+        }
+        
+        function scroll_enable()
+        {
+            scrollLock.enablePageScroll($('.sidebar__wrapper').get());
+        }
+
     	function photo_show()
     	{
 		    // Change header
@@ -364,7 +381,7 @@
 		    // Only the info pane needs scrolling
 		    // Touch event for swiping of photo still work
 
-		    scrollLock.disablePageScroll($('.sidebar__wrapper').get());
+            scroll_disable();
 
 		    // Fullscreen
 		    let timeout = null;
@@ -394,7 +411,7 @@
 		    header_setMode('album');
 
 		    // Make body scrollable
-		    scrollLock.enablePageScroll($('.sidebar__wrapper').get());
+		    scroll_enable();
 
 		    // Disable Fullscreen
 		    $(document).unbind('mousemove');

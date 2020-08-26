@@ -112,9 +112,12 @@
     
     <!-- JS -->
     <script type="text/javascript" src="{{ theme.url }}/js/jquery.min.js"></script>
-    <script type="text/javascript" src="{{ theme.url }}/js/require.js"></script>
     <script async="" type="text/javascript" src="{{ theme.url }}/js/lazysizes.min.js"></script>
     <script type="text/javascript" src="{{ theme.url }}/js/justified-layout.min.js"></script>
+    <script type="text/javascript" src="{{ theme.url }}/js/mousetrap.min.js"></script>
+    <script type="text/javascript" src="{{ theme.url }}/js/mousetrap-global-bind.min.js"></script>
+    <!-- First include global scope loaded scripts that call define() then load require, to avoid problems -->
+    <script type="text/javascript" src="{{ theme.url }}/js/require.js"></script>
     
     <script>
         function lychee_animate(obj, animation)
@@ -770,9 +773,35 @@
         
         function setup_keyboard()
         {
+            Mousetrap.bind([ 'left' ], function() {
+			    if (visible_photo() && (!visible_header() || $('img#image').is(':focus') || $('img#livephoto').is(':focus') || ($(':focus').length === 0 ))) {
+				    $('#imageview a#previous').click();
+				    return false;
+			    }
+			    return true;
+		    });
+		    Mousetrap.bind([ 'right' ], function() {
+			    if (visible_photo() && (!visible_header() || $('img#image').is(':focus') || $('img#livephoto').is(':focus') || ($(':focus').length === 0 ))) {
+				     $('#imageview a#next').click();
+				     return false;
+			    }
+			    return true;
+		    });
+		    
+	    	// Prevent 'esc keyup' event to trigger 'go back in history'
+        	// and 'alt keyup' to show a webapp context menu for Fire TV
+        	Mousetrap.bindGlobal([ 'esc', 'ContextMenu' ], function() { return false;	}, 'keyup');
+
+            // ESC closes photo view
+            Mousetrap.bindGlobal([ 'esc', 'command+up' ], function() {
+                if (visible_photo())
+                    photo_hide();
+
+		        return false;
+	        });
+	        
+	        
             //Mousetrap.addKeycodes({  // TODO  see init.js
-            
-            //Mousetrap.bindGlobal([ 'esc', 'ContextMenu' ],
         }
         
         photo_supportsPrefetch = null;

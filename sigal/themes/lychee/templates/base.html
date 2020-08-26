@@ -925,26 +925,20 @@
 						parseFloat($('.content').css('padding-right'), 10)
 				}
 
-                // TODO we might also use data-height and data-width from all .photo html elements
-				photos = [
-                  {% for media in album.medias %}
-                  {
-                    height: "{{ media.thumb_size.height }}",
-                    width: "{{ media.thumb_size.width }}",
-                    small: "{{ media.thumbnail }}",
-                    medium: "{{ media.big_url }}",
-                    type: "{{ media.type }}"
-                  },
-                  {% endfor %}
-				]
 				let ratio = [];
 
-				$.each(photos, function (i) {
-					ratio[i] = this.height > 0 ? this.width / this.height : 1;
-					if (this.type && this.type.indexOf('video') > -1) {
+                photos_get().each(function (i) {
+                    let el = $(this);
+                    let height = parseFloat(el.attr('data-height'));
+                    let width = parseFloat(el.attr('data-width'));
+                    let pic_type = el.attr('data-type');
+                    let small = el.attr('data-thumb-url');
+                    let medium = el.attr('data-big-url');
+					ratio[i] = height > 0 ? width / height : 1;
+					if (pic_type && pic_type.indexOf('video') > -1) {
 						// Video.  If there's no small and medium, we have
 						// to fall back to the square thumb.
-						if (this.small === '' && this.medium === '') {
+						if (small === '' && medium === '') {
 							ratio[i] = 1;
 						}
 					}

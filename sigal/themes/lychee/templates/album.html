@@ -88,7 +88,7 @@
         // On resize behaviour
         $(window).on('resize', function ()
         {
-    		if(visible_album()) justify();
+    		if(visible_album()) justify(photos_get());
 	    	if(visible_photo()) photo_onresize();
 	    });
 	    

@@ -109,6 +109,11 @@
     <!-- ImageView -->
     <div id="imageview"></div>
     
+    <div class="sidebar">
+        <div class="sidebar__wrapper">
+        </div>
+    </div>
+
     
     <!-- JS -->
     <script type="text/javascript" src="{{ theme.url }}/js/jquery.min.js"></script>
@@ -116,6 +121,7 @@
     <script type="text/javascript" src="{{ theme.url }}/js/justified-layout.min.js"></script>
     <script type="text/javascript" src="{{ theme.url }}/js/mousetrap.min.js"></script>
     <script type="text/javascript" src="{{ theme.url }}/js/mousetrap-global-bind.min.js"></script>
+    <script type="text/javascript" src="{{ theme.url }}/js/scroll-lock.min.js"></script>
     <!-- First include global scope loaded scripts that call define() then load require, to avoid problems -->
     <script type="text/javascript" src="{{ theme.url }}/js/require.js"></script>
     
@@ -357,7 +363,7 @@
 		    // Only the info pane needs scrolling
 		    // Touch event for swiping of photo still work
 
-		    // TODO scrollLock.disablePageScroll($('.sidebar__wrapper').get());
+		    scrollLock.disablePageScroll($('.sidebar__wrapper').get());
 
 		    // Fullscreen
 		    let timeout = null;
@@ -387,7 +393,7 @@
 		    header_setMode('album');
 
 		    // Make body scrollable
-		    // TODO scrollLock.enablePageScroll($('.sidebar__wrapper').get());
+		    scrollLock.enablePageScroll($('.sidebar__wrapper').get());
 
 		    // Disable Fullscreen
 		    $(document).unbind('mousemove');

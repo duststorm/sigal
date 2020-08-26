@@ -63,6 +63,8 @@
 	    
         justify();
 
+        // TODO move much of this to base.html?
+
         header_show();
 	    $('.content').removeClass('view');
 	    header_setMode('album');
@@ -89,7 +91,36 @@
     		if(visible_album()) justify();
 	    	if(visible_photo()) photo_onresize();
 	    });
-	});
+	    
+		// Fullscreen on mobile
+	    $(document).on('touchend', '#imageview #image', function(e) {
+			// prevent triggering event 'mousemove'
+			e.preventDefault();
+
+			if ((typeof swipe.obj === 'undefined') || (Math.abs(swipe.offsetX)<=5 && Math.abs(swipe.offsetY)<=5)) {
+				// Toggle header only if we're not moving to next/previous photo;
+				// In this case, swipe.preventNextHeaderToggle is set to true
+				if((typeof swipe.preventNextHeaderToggle === 'undefined') || (!swipe.preventNextHeaderToggle)) {
+					if (visible_header()) {
+						header_hide(e);
+					} else {
+					  header_show();
+					}
+				}
+
+				// For next 'touchend', behave again as normal and toggle header
+				swipe.preventNextHeaderToggle = false;
+			}
+	    });
+	    
+	    // Swipe behaviour on mobile
+	    $('#imageview')
+		    // Swipe on mobile
+		    .swipe().on('swipeStart', function() { if (visible_photo()) swipe_start($('#imageview #image, #imageview #livephoto')) })
+		    .swipe().on('swipeMove',  function(e) { if (visible_photo()) swipe_move(e.swipe) })
+		    .swipe().on('swipeEnd',   function(e) { if (visible_photo()) swipe_stop(e.swipe, photo_previous, photo_next) })
+	        
+	    });
 </script>
 
 {% endblock %}

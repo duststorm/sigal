@@ -117,6 +117,7 @@
     
     <!-- JS -->
     <script type="text/javascript" src="{{ theme.url }}/js/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ theme.url }}/js/_swipe.jquery.js"></script>
     <script async="" type="text/javascript" src="{{ theme.url }}/js/lazysizes.min.js"></script>
     <script type="text/javascript" src="{{ theme.url }}/js/justified-layout.min.js"></script>
     <script type="text/javascript" src="{{ theme.url }}/js/mousetrap.min.js"></script>
@@ -431,20 +432,7 @@
         };
         
         lychee_viewMode = false;
-        
-        function header_bind()
-        {
-            // TODO we will not be using goto
-            header.dom('#button_back_home')   .on(eventName, function() {
-		        if (!album.json.parent_id) {
-			        lychee.goto();
-		        } else {
-			        lychee.goto(album.getParent());
-		        }
-	        });
-	        header.dom('#button_back')        .on(eventName, function() { lychee.goto(album.getID()) });
-        }
-        
+                
         function header_setMode(mode)
         {
 	        switch (mode) {
@@ -811,6 +799,95 @@
         }
         
         photo_supportsPrefetch = null;
+        
+        
+        
+        swipe = {
+	        obj            : null,
+	        offsetX        : 0,
+	        offsetY        : 0,
+	        preventNextHeaderToggle : false
+        };
+        
+        lychee_swipe_tolerance_x = 150;  // tolerance for navigating when swiping images to the left and right on mobile
+        lychee_swipe_tolerance_y = 250; // tolerance for navigating when swiping images up and down
+
+        function swipe_start(obj)
+        {
+	        if (obj)
+	        {
+	            swipe.obj = obj;
+            }
+	        return true
+        };
+
+        function swipe_move(e)
+        {
+	        if (swipe.obj===null)
+	        {
+		        return false;
+	        }
+
+	        if (Math.abs(e.x) > Math.abs(e.y)) {
+		        swipe.offsetX = -1 * e.x;
+		        swipe.offsetY = 0.0;
+	        } else {
+	          swipe.offsetX = 0.0;
+	          swipe.offsetY = +1 * e.y;
+	        }
+
+	        const value = 'translate(' + swipe.offsetX + 'px, ' +  swipe.offsetY + 'px)';
+	        swipe.obj.css({
+		        'WebkitTransform' : value,
+		        'MozTransform'    : value,
+		        'transform'       : value
+	        })
+	        return;
+        };
+
+        function swipe_stop(e, left, right)
+        {
+	        // Only execute once
+	        if (swipe.obj==null)
+	        {
+		        return false;
+	        }
+
+	        if (e.y<=-lychee_swipe_tolerance_y) {
+	            // Swiping up: Go back from image to album view
+                photo_hide();
+	        } else if (e.y>=lychee_swipe_tolerance_y) {
+    	        // Swiping down: Go back from image to album view
+                photo_hide();
+	        } else if (e.x<=-lychee_swipe_tolerance_x) {
+		        left(true);
+
+		        // 'touchend' will be called after 'swipeEnd'
+		        // in case of moving to next image, we want to skip
+		        // the toggling of the header
+		        swipe.preventNextHeaderToggle = true;
+	        } else if (e.x>=lychee_swipe_tolerance_x) {
+		        right(true);
+
+		        // 'touchend' will be called after 'swipeEnd'
+		        // in case of moving to next image, we want to skip
+		        // the toggling of the header
+		        swipe.preventNextHeaderToggle = true;
+	        } else {
+		        const value = 'translate(0px, 0px)';
+		        swipe.obj.css({
+			        WebkitTransform : value,
+			        MozTransform    : value,
+			        transform       : value
+		        })
+	        }
+
+	        swipe.obj            = null;
+	        swipe.offsetX        = 0;
+	        swipe.offsetY        = 0
+
+	        return;
+        };
 
 
     </script>

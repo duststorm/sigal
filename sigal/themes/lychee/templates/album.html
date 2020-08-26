@@ -44,6 +44,11 @@
     {
         show_photo($(event.currentTarget));
     };
+    
+    function album_up()
+    {
+        window.location.href = "{{ album.index_url }}";
+    };
 
 	// init
 	$(document).ready(function()
@@ -54,6 +59,7 @@
 	    });
 	    
 	    $('#button_back').click(photo_hide);
+	    $('#button_back_home').click(album_up);
 	    
         justify();
 

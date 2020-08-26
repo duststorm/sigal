@@ -363,13 +363,13 @@
 			    // For live Photos: header animtion only if LivePhoto is not playing
 			    //if(!photo.isLivePhotoPlaying() && lychee.header_auto_hide) {
 				    header_show();
-				    timeout = setTimeout(header_hideIfLivePhotoNotPlaying, 2500);
+				    timeout = setTimeout(header_hide, 2500);
 			    //}
 		    });
 
             // we also put this timeout to enable it by default when you directly click on a picture.
 		    //if(lychee.header_auto_hide) {
-			    setTimeout(header_hideIfLivePhotoNotPlaying, 2500);
+			    setTimeout(header_hide, 2500);
 		    //}
 
             $('#imageview').show()
@@ -513,15 +513,13 @@
 	        return true
         };
         
-        function header_hideIfLivePhotoNotPlaying()
-        {
-	        // Hides the header, if current live photo is not playing
-	        return header_hide();
-        };
-
         function header_hide()
         {
 	        //if (visible.photo() && !visible.sidebar() && !visible.contextMenu() && basicModal.visible()===false) {
+            if (!visible_photo())
+            {
+                return false;
+            }
 
 		        //tabindex.saveSettings(header.dom());
 		        //tabindex.makeUnfocusable(header.dom());

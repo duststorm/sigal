@@ -11,18 +11,38 @@
     <link rel="prefetch" href="static/leaflet/leaflet.js" />
     <link rel="prefetch" href="static/leaflet/leaflet-providers.js" />
     {% endif %}
+    
+    <style>
+        #albums {position: relative;}
+        div .album {float: left;}
+    </style>
+
 {% endblock %}
 
 {% block content %}
         <div id="albums">
-          <ul>
             {% for alb in album.albums %}
-            <li><a href="{{ alb.url }}">
-              <img src="{{ alb.thumbnail }}" class="album_thumb" alt="{{ alb.name }}" title="{{ alb.name }}" /></a>
-              <span class="album_title">{{ alb.title }}</span>
-            </li>
+
+            <div class="album" data-id="{{ alb.name }}" data-url="{{ alb.url }}">
+				  <span class="thumbimg"><img class=" ls-is-cached lazyload" src="{{ alb.random_thumbnail }}" data-src="{{ alb.random_thumbnail }}" data-srcset="{{ alb.random_thumbnail }} 2x" alt="Photo thumbnail" data-overlay="false" draggable="false" srcset="{{ alb.random_thumbnail }} 2x"></span>
+				  <span class="thumbimg"><img class=" ls-is-cached lazyload" src="{{ alb.random_thumbnail }}" data-src="{{ alb.random_thumbnail }}" data-srcset="{{ alb.random_thumbnail }} 2x" alt="Photo thumbnail" data-overlay="false" draggable="false" srcset="{{ alb.random_thumbnail }} 2x"></span>
+				  <span class="thumbimg"><img class=" ls-is-cached lazyload" src="{{ alb.thumbnail }}" data-src="{{ alb.thumbnail }}" data-srcset="{{ alb.thumbnail }} 2x" alt="{{ alb.name }}" data-overlay="false" draggable="false" srcset="{{ alb.thumbnail }} 2x"></span>
+
+				<div class="overlay">
+					<h1 title="{{ alb.title }}">{{ alb.title }}</h1>
+					<a><!-- TODO put album date (month, year (range)) here eg. "Aug 2019" or "Jul 2009 - Nov 2018" --></a>
+				</div>
+			
+				<div class="badges">
+					<a class="badge  icn-star"><svg class="iconic "><use xlink:href="#star"></use></svg></a>
+					<a class="badge  badge--not--hidden icn-share"><svg class="iconic "><use xlink:href="#eye"></use></svg></a>
+					<a class="badge "><svg class="iconic "><use xlink:href="#list"></use></svg></a>
+					<a class="badge "><svg class="iconic "><use xlink:href="#clock"></use></svg></a>
+					<a class="badge "><svg class="iconic "><use xlink:href="#lock-locked"></use></svg></a>
+				</div>
+			</div>
+
             {% endfor %}
-          </ul>
         </div>
 
         {% if album.description %}
@@ -30,4 +50,39 @@
           {{ album.description }}
         </div>
         {% endif %}
+{% endblock %}
+
+{% block late_js %}
+<script>
+    function onAlbumClicked(event)
+    {
+        let el = $(event.currentTarget);
+        let url = el.attr('data-url');
+        window.location.href = url;
+    };
+    
+    function album_up()
+    {
+        window.location.href = "{{ album.index_url }}";
+    };
+
+	// init
+	$(document).ready(function()
+	{
+
+        $("div .album").each(function (i) {
+            $(this).click(onAlbumClicked);
+	    });
+	    
+	    $('#button_back_home').hide();
+	    
+
+        // TODO move much of this to base.html?
+
+        header_show();
+	    $('.content').removeClass('view');
+	    header_setMode('album');
+    });
+</script>
+
 {% endblock %}

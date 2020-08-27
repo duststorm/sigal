@@ -112,9 +112,7 @@ def generate_album_zip(album):
     
 def generate_all_album_zip(album):
     """Generate zip of this folder and all subfolders"""
-    logger.debug("Generating recursive album %s", album.name)
     if not _should_generate_album_zip(album):
-        logger.debug("==NOOOOOOOOOOOOOOO")
         logger.info("Ignoring all_ZIP gallery generation for album '%s' because of present "
                     ".nozip_gallery file", album.name)
         return False

@@ -47,39 +47,51 @@ def _should_generate_album_zip(album):
     nozipgallerypath = os.path.join(album.src_path, ".nozip_gallery")
     return not os.path.isfile(nozipgallerypath)
 
-def _generate_album_zip(album):
+def _generate_album_zip(album, recursive=False, archive=None, arch_path=''):
     """Make a ZIP archive with all media files and return its path.
 
     If the ``zip_gallery`` setting is set,it contains the location of a zip
     archive with all original images of the corresponding directory.
     """
-
     zip_gallery = album.settings['zip_gallery']
+    
+    if not zip_gallery or len(album) == 0:
+        return False
 
-    if zip_gallery and len(album) > 0:
-        zip_gallery = zip_gallery.format(album=album)
-        archive_path = join(album.dst_path, zip_gallery)
-        if (album.settings.get('zip_skip_if_exists', False) and
-                isfile(archive_path)):
-            logger.debug("Archive %s already created, passing", archive_path)
-            return zip_gallery
+    zip_gallery = zip_gallery.format(album=album)
 
-        archive = zipfile.ZipFile(archive_path, 'w', allowZip64=True)
-        attr = ('src_path' if album.settings['zip_media_format'] == 'orig'
-                else 'dst_path')
+    if recursive:
+        fn, ext = os.path.splitext(zip_gallery)
+        zip_gallery = fn + '_all' + ext
 
-        for p in album:
-            path = getattr(p, attr)
-            try:
-                archive.write(path, os.path.split(path)[1])
-            except OSError as e:
-                logger.warn('Failed to add %s to the ZIP: %s', p, e)
-
-        archive.close()
-        logger.debug('Created ZIP archive %s', archive_path)
+    archive_path = join(album.dst_path, zip_gallery)
+    if (album.settings.get('zip_skip_if_exists', False) and
+            isfile(archive_path)):
+        logger.debug("Archive %s already created, passing", archive_path)
         return zip_gallery
 
-    return False
+    if archive is None:
+        archive = zipfile.ZipFile(archive_path, 'w', allowZip64=True)
+
+    attr = ('src_path' if album.settings['zip_media_format'] == 'orig'
+            else 'dst_path')
+
+    for p in album:
+        path = getattr(p, attr)
+        arch_file_path = os.path.join(arch_path, os.path.split(path)[1])
+        try:
+            archive.write(path, arch_file_path)
+        except OSError as e:
+            logger.warn('Failed to add %s to the ZIP: %s', p, e)
+
+    if recursive:
+        for alb in album.albums:
+            _generate_album_zip(alb, recursive=recursive, archive=archive, arch_path=os.path.join(arch_path, alb.name))
+
+    if not recursive or not arch_path:
+        archive.close()
+        logger.debug('Created ZIP archive %s', archive_path)
+    return zip_gallery
 
 def generate_album_zip(album):
     """Checks for .nozip_gallery file in album folder.
@@ -97,10 +109,21 @@ def generate_album_zip(album):
         return False
 
     return _generate_album_zip(album)
+    
+def generate_all_album_zip(album):
+    """Generate zip of this folder and all subfolders"""
+    logger.debug("Generating recursive album %s", album.name)
+    if not _should_generate_album_zip(album):
+        logger.debug("==NOOOOOOOOOOOOOOO")
+        logger.info("Ignoring all_ZIP gallery generation for album '%s' because of present "
+                    ".nozip_gallery file", album.name)
+        return False
+    return _generate_album_zip(album, recursive=True)
 
 def nozip_gallery_file(album, settings=None):
     """Filesystem based switch to disable ZIP generation for an Album"""
     Album.zip = cached_property(generate_album_zip)
+    Album.all_zip = cached_property(generate_all_album_zip)
 
 def register(settings):
     signals.album_initialized.connect(nozip_gallery_file)

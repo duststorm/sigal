@@ -208,15 +208,27 @@
 
 
         // TODO autoplay option is never really used
-        function build_imageview(data, visibleControls, autoplay)
+        function build_imageview(photoElement, visibleControls, autoplay)
         {
 	        let html = '';
 	        let thumb = '';
+	        
+	        let media_id = photoElement.attr('data-id');
+	        let media_type = photoElement.attr('data-type');
+	        let img_medium = photoElement.attr('data-url');
+	        let img_medium2x = photoElement.attr('data-hidpi-url');
+
+	        //let media_url = photoElement.attr('data-url');
+	        //let media_url = photoElement.attr('data-big-url');  // TODO ?
+
+	        let img_medium_dim = parseInt(photoElement.attr('data-width'), 10);
+	        let img_medium2x_dim = 2*img_medium_dim;
+
 
 /*
-	        if (data.type.indexOf('video') > -1) {
-		        html += lychee_html`<video width="auto" height="auto" id='image' controls class='${visibleControls === true ? '' : 'full'}' autobuffer ${autoplay ? 'autoplay' : ''} data-tabindex='${tabindex.get_next_tab_index()}'><source src='${data.url}'>Your browser does not support the video tag.</video>`
-	        } else if (data.type.indexOf('raw') > -1 && data.medium === '') {
+	        if (media_type.indexOf('video') > -1) {
+		        html += lychee_html`<video width="auto" height="auto" id='image' controls class='${visibleControls === true ? '' : 'full'}' autobuffer ${autoplay ? 'autoplay' : ''} data-tabindex='${tabindex.get_next_tab_index()}'><source src='${media_url}'>Your browser does not support the video tag.</video>`
+	        } else if (media_type.indexOf('raw') > -1 && img_medium === '') {
 		        html += lychee_html`<img id='image' class='${visibleControls === true ? '' : 'full'}' src='img/placeholder.png' draggable='false' alt='big' data-tabindex='${tabindex.get_next_tab_index()}'>`
 	        } else {
 */
@@ -224,7 +236,7 @@
 
 		        // See if we have the thumbnail loaded...
 		        $('.photo').each(function () {
-			        if ($(this).attr('data-id') && $(this).attr('data-id') == data.id) {
+			        if ($(this).attr('data-id') && $(this).attr('data-id') == media_id) {
 				        let thumbimg = $(this).find('img');
 				        if (thumbimg.length > 0) {
 					        thumb = thumbimg[0].currentSrc ? thumbimg[0].currentSrc : thumbimg[0].src;
@@ -233,18 +245,19 @@
 			        }
 		        });
 
-		        if (data.hasOwnProperty('medium') && data.medium !== '') {
+//		        if (img_medium && img_medium !== '') {
 			        let medium = '';
 
-			        if (data.hasOwnProperty('medium2x') && data.medium2x !== '') {
-				        medium = `srcset='${data.medium} ${parseInt(data.medium_dim, 10)}w, ${data.medium2x} ${parseInt(data.medium2x_dim, 10)}w'`;
+			        if (img_medium2x && img_medium2x !== '') {
+				        medium = `srcset='${img_medium} ${img_medium_dim}w, ${img_medium2x} ${img_medium2x_dim}w'`;
 			        }
-			        img = `<img id='image' class='${visibleControls === true ? '' : 'full'}' src='${data.medium}' ` + medium + `  draggable='false' alt='medium'}'>`
+			        img = `<img id='image' class='${visibleControls === true ? '' : 'full'}' src='${img_medium}' ` + medium + `  draggable='false' alt='medium'}'>`
 
+/*
 		        } else {
-			        img = `<img id='image' class='${visibleControls === true ? '' : 'full'}' src='${data.url}' draggable='false' alt='big'}'>`
+			        img = `<img id='image' class='${visibleControls === true ? '' : 'full'}' src='${media_url}' draggable='false' alt='big'}'>`
 		        }
-
+*/
 
 		        html += lychee_html`${img}`;
 
@@ -263,16 +276,10 @@
         };
 
         // Called when image is clicked
-        function update_imageview(image_url)
+        function update_imageview(currentPhoto)
         {        
             let imageview = $('#imageview');
-            // TODO feed correct data (of photo clicked)
-            // eg $(".photo").first().attr("data-id")
-            let data = {
-                id: image_url,
-                url: image_url
-            };
-    		imageview.html(build_imageview(data, true).html);
+    		imageview.html(build_imageview(currentPhoto, true).html);
 		    imageview.find('.arrow_wrapper').remove();  // TODO why??
 		    imageview.addClass('fadeIn').show();
 		    photo_onresize();
@@ -298,7 +305,7 @@
         function show_photo(photoElement)
         {
             photo_current = photoElement;
-            update_imageview( photo_current.attr('data-url') );
+            update_imageview( photo_current );
             // TODO or view_photo() ??
             view_photo();
             
@@ -700,13 +707,8 @@
         function view_photo(autoplay = true)
         {
 		    let currPhoto = photo_getCurrent();
-            let image_url = currPhoto.attr('data-url');
-            let photo_data = {
-                id: image_url,
-                url: image_url
-            };
             // TODO duplicate of update_imageview() ?
-		    let ret = build_imageview(photo_data, visible_header(), autoplay);
+		    let ret = build_imageview(currPhoto, visible_header(), autoplay);
 		    let imageview = $('#imageview');
 		    imageview.html(ret.html);
 		    //tabindex.makeFocusable(lychee.imageview);

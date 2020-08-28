@@ -86,13 +86,13 @@
         setup_keyboard();
         
         // TODO // Fullscreen on mobile
-        
-		// TODO Swipe on mobile
-        //$('#imageview').swipe(
-        
-        // TODO fullscreen
-        //$(document).on('fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange', lychee_fullscreenUpdate);
-        
+
+
+        // Fullscreen button
+        $(document).on('fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange', lychee_fullscreenUpdate);
+        $('.header').find('#button_fs_album_enter,#button_fs_enter').click(lychee_fullscreenEnter);
+        $('.header').find('#button_fs_album_exit,#button_fs_exit').click(lychee_fullscreenExit);
+
         // On resize behaviour
         $(window).on('resize', function ()
         {

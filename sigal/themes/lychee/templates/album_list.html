@@ -83,7 +83,10 @@
 	    $('#button_archive').attr('title', 'Download everything')
         $('#button_archive').click(downloadAll);
 	    
-        //justify($("div .album"));
+	    // Fullscreen button
+        $(document).on('fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange', lychee_fullscreenUpdate);
+        $('.header').find('#button_fs_album_enter,#button_fs_enter').click(lychee_fullscreenEnter);
+        $('.header').find('#button_fs_album_exit,#button_fs_exit').click(lychee_fullscreenExit);
 
         // TODO move much of this to base.html?
 

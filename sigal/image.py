@@ -166,6 +166,16 @@ def generate_thumbnail(source, outname, box, fit=True, options=None,
     logger.debug('Save thumnail image: %s (%s)', outname, outformat)
     save_image(img, outname, outformat, options=options, autoconvert=True)
 
+def get_processing_options(filename, settings):
+    """Get image processing options that apply based on file type."""
+
+    ext = os.path.splitext(filename)[1]
+
+    if ext in ('.jpg', '.jpeg', '.JPG', '.JPEG'):
+        return settings['jpg_options']
+    elif ext == '.png':
+        return {'optimize': True}
+    return {}
 
 def process_image(filepath, outpath, settings):
     """Process one image: resize, create thumbnail."""
@@ -174,14 +184,8 @@ def process_image(filepath, outpath, settings):
     logger.info('Processing %s', filepath)
     filename = os.path.split(filepath)[1]
     outname = os.path.join(outpath, filename)
-    ext = os.path.splitext(filename)[1]
 
-    if ext in ('.jpg', '.jpeg', '.JPG', '.JPEG'):
-        options = settings['jpg_options']
-    elif ext == '.png':
-        options = {'optimize': True}
-    else:
-        options = {}
+    options = get_processing_options(filename, settings)
 
     try:
         generate_image(filepath, outname, settings, options=options)

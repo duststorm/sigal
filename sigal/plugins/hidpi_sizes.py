@@ -24,9 +24,6 @@ High DPI images are used by themes that support it, such as the Lychee theme.
 If the ``create_high_dpi`` setting is set to True, this plugin will generate
 images at double the configured size for each of the images.
 It will attach the properties ``url_2x`` and ``thumbnail_2x`` to media elements.
-
-Generation of high DPI images is lazy, they will be generated only when 
-referenced in the theme.
 """
 
 import logging
@@ -44,23 +41,14 @@ logger = logging.getLogger(__name__)
 def get_hidpi_filename(filename):
     fn, ext = os.path.splitext(filename)
     return fn + "_2x" + ext
-
-def get_hidpi_image(media):
-    settings = media.settings
-    filepath = media.src_path
-
-    logger.info('Processing high DPI image %s', filepath)
-    filename = os.path.split(filepath)[1]
-    filename_2x = get_hidpi_filename(filename)
-    outpath = os.path.join(settings['destination'], media.path)
-    outname = os.path.join(outpath, filename_2x)
     
+def generate_hidpi_image(filepath, outname, settings):
     force = False  # TODO do not have access to cmdline arg "force"
     if os.path.isfile(outname) and not force:
         logger.info("HighDPI %s exists - skipping", outname)
         return outname
 
-    options = sigal.image.get_processing_options(filename, settings)
+    options = sigal.image.get_processing_options(outname, settings)
     width, height = settings['img_size']
     hidpi_settings = settings.copy()
     hidpi_settings['img_size'] = (2*width, 2*height)
@@ -75,6 +63,19 @@ def get_hidpi_image(media):
             traceback.print_exc()
 
     return outname
+
+
+def get_hidpi_image(media):
+    settings = media.settings
+    filepath = media.src_path
+
+    logger.info('Processing high DPI image %s', filepath)
+    filename = os.path.split(filepath)[1]
+    filename_2x = get_hidpi_filename(filename)
+    outpath = os.path.join(settings['destination'], media.path)
+    outname = os.path.join(outpath, filename_2x)
+    
+    return generate_hidpi_image(filepath, outname, settings)
 
 def get_hidpi_video(media):
     # TODO
@@ -118,14 +119,17 @@ def get_thumbnail_hidpi(media):
             return
     return url_from_path(thumb_2x_name)
     
-#def generate_hidpi(img, settings=None):
+def generate_hidpi(img, settings=None):
+    # TODO
+    generate_hidpi_image(filepath, outname, settings)
+    generate_hidpi_thumbnail(filepath, outname, settings)
 
 
 def init_hidpi():
     Media.url_2x = cached_property(get_url_hidpi)
     Media.thumbnail_2x = cached_property(get_thumbnail_hidpi)
-    #signals.img_resized.connect(generate_hidpi)
-    #signals.media_initialized.connect(add_watermark)
+    # TODO make sure resizing happens in parallel, for this to work, the img_resized signal will have to pass some extra parameters, otherwise only available in the Media object which is created at a later time
+    #signals.img_resized.connect(generate_hidpi)  # Using this callback, we can generate images in parallel jobs
 
 def register(settings):
     if settings.get('create_high_dpi'):

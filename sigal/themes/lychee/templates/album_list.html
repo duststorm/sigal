@@ -23,7 +23,7 @@
         <div id="albums">
             {% for alb in album.albums %}
 
-            <div class="album" data-id="{{ alb.name }}" data-url="{{ alb.url }}" data-zipdl="{{ alb.zip }}" data-title="{{ alb.title }}" data-thumb="{{ alb.thumbnail }}>
+            <div class="album" data-id="{{ alb.name }}" data-url="{{ alb.url }}" data-zipdl="{{ alb.zip }}" data-title="{{ alb.title }}" data-thumb="{{ alb.thumbnail }}">
 				  <span class="thumbimg"><img class=" ls-is-cached lazyload" src="{{ alb.random_thumbnail }}" data-src="{{ alb.random_thumbnail }}" data-srcset="{{ alb.random_thumbnail }} 2x" alt="Photo thumbnail" data-overlay="false" draggable="false" srcset="{{ alb.random_thumbnail }} 2x"></span>
 				  <span class="thumbimg"><img class=" ls-is-cached lazyload" src="{{ alb.random_thumbnail }}" data-src="{{ alb.random_thumbnail }}" data-srcset="{{ alb.random_thumbnail }} 2x" alt="Photo thumbnail" data-overlay="false" draggable="false" srcset="{{ alb.random_thumbnail }} 2x"></span>
 				  <span class="thumbimg"><img class=" ls-is-cached lazyload" src="{{ alb.thumbnail }}" data-src="{{ alb.thumbnail }}" data-srcset="{{ alb.thumbnail }} 2x" alt="{{ alb.name }}" data-overlay="false" draggable="false" srcset="{{ alb.thumbnail }} 2x"></span>

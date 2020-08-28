@@ -49,6 +49,13 @@
     {
         window.location.href = "{{ album.index_url }}";
     };
+    
+    function download_photo()
+    {
+        // Download original of current photo
+        // TODO handle gracefully when no photo or no big-url
+        window.open(photo_getCurrent().attr('data-big-url'));
+    }
 
 	// init
 	$(document).ready(function()
@@ -60,6 +67,7 @@
 	    
 	    $('#button_back').click(photo_hide);
 	    $('#button_back_home').click(album_up);
+	    $('#button_download').click(download_photo);
 	    
         justify(photos_get());
 

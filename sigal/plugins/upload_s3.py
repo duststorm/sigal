@@ -24,6 +24,7 @@ Settings (all settings are wrapped in ``upload_s3_options`` dict):
 
 import logging
 import os
+import mimetypes
 
 from click import progressbar
 
@@ -88,12 +89,16 @@ def upload_file_if_changed(gallery, f, size, key, bucket, s3):
 
             m = key["Metadata"]
             m["Cache-Control"] = cache_metadata
-            keypath = os.path.join(gallery.settings['destination'], f)
-            s3.meta.client.copy_object(Bucket=bucket.name, Key=keypath, 
-                                       CopySource=os.path.join(bucket.name, keypath),
+            extra_kwargs = {}
+            if gallery.settings['upload_s3_options'].get('enable_inline', False):
+                extra_kwargs["ContentDisposition"] = 'inline'
+            s3.meta.client.copy_object(Bucket=bucket.name, Key=f, 
+                                       CopySource=os.path.join(bucket.name, f),
                                        CacheControl=cache_metadata,
+                                       ContentType=get_mime_type(f),
                                        Metadata=m,
-                                       MetadataDirective='REPLACE')
+                                       MetadataDirective='REPLACE',
+                                       **extra_kwargs)
 
     if gallery.settings['upload_s3_options'].get('md5_hash', False):
         # Compare MD5 hashes for checking difference
@@ -141,6 +146,9 @@ def get_md5_content_str(f_obj):
     content_md5_str = base64.b64encode(digest)
     f_obj.seek(0)
     return content_md5_str.decode('ascii')
+    
+def get_mime_type(file_path):
+    return mimetypes.guess_type(file_path)[0]
 
 def upload_file(gallery, bucket, f, file_md5_hash=None):
     logger.debug("Uploading file %s" % (f))
@@ -154,7 +162,9 @@ def upload_file(gallery, bucket, f, file_md5_hash=None):
     extra_kwargs = dict()
     if cache_metadata:
         extra_kwargs["CacheControl"] = cache_metadata
-        
+    if gallery.settings['upload_s3_options'].get('enable_inline', False):
+        extra_kwargs["ContentDisposition"] = 'inline'
+
     with open(f_path, 'rb') as f_obj:
         if gallery.settings['upload_s3_options'].get('md5_hash', False):
             if file_md5_hash is None:
@@ -165,6 +175,7 @@ def upload_file(gallery, bucket, f, file_md5_hash=None):
         bucket.put_object(Body=f_obj,
                       Key=f,
                       ACL=acl_policy,
+                      ContentType=get_mime_type(f),
                       **extra_kwargs)
 
     #s3.get_bucket_website(Bucket='BUCKET_NAME')

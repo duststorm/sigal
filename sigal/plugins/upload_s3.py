@@ -6,7 +6,7 @@ exists and the you have access to the S3 bucket. The access credentials are
 managed by boto_ and can be given as environment variables, configuration files
 etc. More information can be found on the boto_ documentation.
 
-.. _boto: https://pypi.org/project/boto/
+.. _boto3: https://pypi.org/project/boto3/
 
 Settings (all settings are wrapped in ``upload_s3_options`` dict):
 
@@ -24,6 +24,7 @@ Settings (all settings are wrapped in ``upload_s3_options`` dict):
 
 import logging
 import os
+import json
 
 from click import progressbar
 
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 def upload_s3(gallery, settings=None):
-    import boto
+    import boto3
     upload_files = []
 
     # Get local files
@@ -45,23 +46,28 @@ def upload_s3(gallery, settings=None):
             upload_files += [(path, size)]
 
     # Connect to specified bucket
-    conn = boto.connect_s3()
-    bucket = conn.get_bucket(gallery.settings['upload_s3_options']['bucket'])
+    session = boto3.Session(profile_name=gallery.settings['upload_s3_options'].get("credentials_profile", "default"))
+    s3 = session.resource('s3')
+    bucket_name = gallery.settings['upload_s3_options']['bucket']
+    bucket = s3.Bucket(bucket_name)
 
     # Upload the files
     with progressbar(upload_files, label="Uploading files to S3") as bar:
         for (f, size) in bar:
             if gallery.settings['upload_s3_options']['overwrite'] is False:
                 # Check if file was uploaded before
-                key = bucket.get_key(f)
-                if key is not None and key.size == size:
-                    cache_metadata = generate_cache_metadata(gallery, f)
+                try:
+                    bucket.head_object(Key=f)
 
-                    if key.get_metadata('Cache-Control') != cache_metadata:
-                        key.set_remote_metadata({
-                            'Cache-Control': cache_metadata}, {}, True)
-                    logger.debug("Skipping file %s" % (f))
-                else:
+                    if key is not None and key.size == size:
+                        cache_metadata = generate_cache_metadata(gallery, f)
+
+                        if key.get_metadata('Cache-Control') != cache_metadata:
+                            key.set_remote_metadata({
+                                'Cache-Control': cache_metadata}, {}, True)
+                        logger.debug("Skipping file %s" % (f))
+                except:
+                    # Doesn't exist
                     upload_file(gallery, bucket, f)
             else:
                 # File is not available on S3 yet
@@ -84,18 +90,19 @@ def generate_cache_metadata(gallery, f):
 
 def upload_file(gallery, bucket, f):
     logger.debug("Uploading file %s" % (f))
-
-    from boto.s3.key import Key
-    key = Key(bucket)
-    key.key = f
-
+    
     cache_metadata = generate_cache_metadata(gallery, f)
-    if cache_metadata:
-        key.set_metadata('Cache-Control', cache_metadata)
 
-    key.set_contents_from_filename(
-        os.path.join(gallery.settings['destination'], f),
-        policy=gallery.settings['upload_s3_options']['policy'])
+    # ACL must be one of 'private'|'public-read'|'public-read-write'|'authenticated-read'|'aws-exec-read'|'bucket-owner-read'|'bucket-owner-full-control'
+    acl_policy = gallery.settings['upload_s3_options']['policy']
+    f_path = os.path.join(gallery.settings['destination'], f)
+    with open(f_path, 'rb') as f_obj:
+        bucket.put_object(Body=f_obj,
+                      Key=f,
+                      ACL=acl_policy,
+                      CacheControl=json.dumps(cache_metadata))
+
+    #s3.get_bucket_website(Bucket='BUCKET_NAME')
 
 
 def register(settings):

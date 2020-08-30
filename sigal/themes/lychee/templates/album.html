@@ -21,14 +21,6 @@
 
     </div></div>
 
-        {% if album.zip %}
-        <div id="additionnal-infos" class="row">
-          <p><a href="{{ album.zip }}"
-                title="Download a zip archive with all images">Download ZIP</a>
-          </p>
-        </div>
-        {% endif %}
-
         {% if album.description %}
         <div id="description">
           {{ album.description }}
@@ -67,7 +59,11 @@
 	    
 	    $('#button_back').click(photo_hide);
 	    $('#button_back_home').click(album_up);
-	    $('#button_download').click(download_photo);
+	    {% if album.zip %}
+    	    $('#button_download').click(download_photo);
+	    {% else %}
+	        $('#button_download').hide();
+	    {% endif %}
 	    
         justify(photos_get());
 

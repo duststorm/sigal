@@ -2,15 +2,6 @@
 
 {% block extra_head %}
     {# These are used on album pages - prefetch now #}
-    <link rel="prefetch" href="static/jquery-3.3.1.min.js" />
-    <link rel="prefetch" href="static/galleria.min.js" />
-    <link rel="prefetch" href="static/themes/classic/galleria.classic.min.js" />
-    <link rel="prefetch" href="static/plugins/history/galleria.history.min.js" />
-    {% if settings.show_map %}
-    <link rel="prefetch" href="static/leaflet/leaflet.css" />
-    <link rel="prefetch" href="static/leaflet/leaflet.js" />
-    <link rel="prefetch" href="static/leaflet/leaflet-providers.js" />
-    {% endif %}
     
     <style>
         #albums {position: relative;}
@@ -81,7 +72,12 @@
 	    
 	    $('#button_back_home').hide();
 	    $('#button_archive').attr('title', 'Download everything')
-        $('#button_archive').click(downloadAll);
+	    {% if album.zip %}
+            $('#button_archive').click(downloadAll);
+	    {% else %}
+	        $('#button_archive').hide();
+	    {% endif %}
+
 	    
 	    // Fullscreen button
         $(document).on('fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange', lychee_fullscreenUpdate);

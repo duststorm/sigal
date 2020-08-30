@@ -82,9 +82,7 @@ def upload_file_if_changed(gallery, f, size, key, bucket, s3):
             return
 
         cache_metadata = generate_cache_metadata(gallery, f)
-
         cc = key.get('CacheControl', "")
-
         if cc != cache_metadata:
             logger.debug('Cache policy differs, updating metadata of %s', f)
 

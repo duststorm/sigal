@@ -79,7 +79,7 @@ def get_hidpi_image(media):
 
 def get_hidpi_video(media):
     # TODO
-    pass
+    return ""
 
 def get_url_hidpi(media):
     if media.type == 'image':

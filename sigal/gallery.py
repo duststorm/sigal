@@ -302,6 +302,11 @@ class Album:
             self.src_path = join(settings['source'], path)
             self.dst_path = join(settings['destination'], path)
 
+        #: List of all medias in the album (:class:`~sigal.gallery.Image` and
+        #: :class:`~sigal.gallery.Video`).
+        self.medias = medias = []
+        self.medias_count = defaultdict(int)
+
         self.logger = logging.getLogger(__name__)
         self._get_metadata()
 
@@ -310,11 +315,6 @@ class Album:
 
         self.index_url = url_from_path(os.path.relpath(
             settings['destination'], self.dst_path)) + '/' + self.url_ext
-
-        #: List of all medias in the album (:class:`~sigal.gallery.Image` and
-        #: :class:`~sigal.gallery.Video`).
-        self.medias = medias = []
-        self.medias_count = defaultdict(int)
 
         for f in filenames:
             ext = splitext(f)[1]

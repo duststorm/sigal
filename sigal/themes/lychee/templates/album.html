@@ -14,7 +14,7 @@
             <span class="thumbimg"><img class="lazyload" src="{{ theme.url }}/img/placeholder.png" data-src="{{ media.thumbnail }}" data-srcset="{{ media.thumbnail }} 540w {% if media.thumbnail_2x %}, {{ media.thumbnail_2x }} 1080w {% endif %}" alt="Photo thumbnail" data-overlay="false" draggable="false" sizes="519.9372905257027px" srcset="{{ media.thumbnail }} 540w {% if media.thumbnail_2x %}, {{ media.thumbnail_2x }} 1080w {% endif %}"></span>
             <div class="overlay">
 	            <h1 title="{{ media.title }}">{{ media.title }}</h1>
-        <a><span title="Camera Date"><svg class="iconic "><use xlink:href="#camera-slr"></use></svg></span>{{ media.exif.datetime }}</a></div>
+        <a><span title="Camera Date"><svg class="iconic "><use xlink:href="#camera-slr"></use></svg></span>{% if media.exif %}{{ media.exif.datetime }}{% endif %}</a></div>
             </div>
       
       {% endfor %}

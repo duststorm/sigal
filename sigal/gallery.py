@@ -514,8 +514,8 @@ class Album:
     @property
     def random_thumbnail(self):
         try:
-            return url_from_path(join(self.name,
-                                      random.choice(self.medias).thumbnail))
+            return join(url_from_path(self.name),
+                        random.choice(self.medias).thumbnail)
         except IndexError:
             return self.thumbnail
 

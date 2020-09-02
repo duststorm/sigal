@@ -491,21 +491,13 @@
         function header_setMode(mode)
         {
 	        switch (mode) {
-		        case 'public':
-
-			        $('.header').removeClass('header--view');
-			        $('.header__toolbar--albums, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map').removeClass('header__toolbar--visible');
-			        $('.header__toolbar--public').addClass('header__toolbar--visible');
-			        //tabindex.makeFocusable(header.dom('.header__toolbar--public'));
-			        //tabindex.makeUnfocusable(header.dom('.header__toolbar--albums, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map'));
-
-			        return true;
-
 		        case 'albums':
 
 			        $('.header').removeClass('header--view');
 			        $('.header__toolbar--public, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map').removeClass('header__toolbar--visible');
 			        $('.header__toolbar--albums').addClass('header__toolbar--visible');
+			        
+			        $('#footer').show();
 
 			        //tabindex.makeFocusable(header.dom('.header__toolbar--albums'));
 			        //tabindex.makeUnfocusable(header.dom('.header__toolbar--public, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map'));
@@ -517,6 +509,8 @@
 			        $('.header').removeClass('header--view');
 			        $('.header__toolbar--public, .header__toolbar--albums, .header__toolbar--photo, .header__toolbar--map').removeClass('header__toolbar--visible');
 			        $('.header__toolbar--album').addClass('header__toolbar--visible');
+			        
+			        $('#footer').show();
 
 			        //tabindex.makeFocusable(header.dom('.header__toolbar--album'));
 			        //tabindex.makeUnfocusable(header.dom('.header__toolbar--public, .header__toolbar--albums, .header__toolbar--photo, .header__toolbar--map'));
@@ -527,6 +521,8 @@
 			        $('.header').addClass('header--view');
 			        $('.header__toolbar--public, .header__toolbar--albums, .header__toolbar--album, .header__toolbar--map').removeClass('header__toolbar--visible');
 			        $('.header__toolbar--photo').addClass('header__toolbar--visible');
+			        
+			        $('#footer').hide();
 
 			        //tabindex.makeFocusable(header.dom('.header__toolbar--photo'));
 			        //tabindex.makeUnfocusable(header.dom('.header__toolbar--public, .header__toolbar--albums, .header__toolbar--album, .header__toolbar--map'));

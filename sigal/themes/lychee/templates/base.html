@@ -243,8 +243,16 @@
 
 
 	        if (media_type.indexOf('video') > -1) {
+	            let video_url = img_medium;
+	            if (img_original && img_original !== '')
+	            {
+	                if ($(window).width() > img_medium_dim)
+	                {
+	                    video_url = img_original;
+	                }
+	            }
 		        html += lychee_html`<video width="auto" height="auto" id='image' controls class='${visibleControls === true ? '' : 'full'}' autobuffer ${autoplay ? 'autoplay' : ''}>
-    		        <source src='${img_medium}'>
+    		        <source src='${video_url}'>
 		        Your browser does not support the video tag.</video>`;
 
 /*

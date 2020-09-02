@@ -42,7 +42,7 @@ from click import get_terminal_size, progressbar
 from natsort import natsort_keygen, ns
 
 from . import image, signals, video
-from .image import get_exif_tags, get_image_metadata, get_size, process_image
+from .image import get_exif_tags, get_image_metadata, process_image
 from .settings import get_thumb
 from .utils import (Devnull, cached_property, check_or_create_dir, copy,
                     get_mime, is_valid_html5_video, read_markdown,
@@ -223,12 +223,21 @@ class Image(Media):
     @cached_property
     def size(self):
         """The dimensions of the resized image."""
-        return get_size(self.dst_path)
+        return image.get_size(self.dst_path)
 
     @cached_property
     def thumb_size(self):
         """The dimensions of the thumbnail image."""
-        return get_size(self.thumb_path)
+        return image.get_size(self.thumb_path)
+
+    @cached_property
+    def big_size(self):
+        """The dimensions of the original image."""
+        big_path = self.big
+        if big_path is None:
+            return 0
+        big_path = join(self.settings['destination'], self.path, big_path)
+        return image.get_size(big_path)
 
     def has_location(self):
         """True if location information is available for EXIF GPSInfo."""
@@ -253,19 +262,27 @@ class Video(Media):
             self.dst_path = join(settings['destination'], path, base + ext)
         else:
             self.mime = get_mime(ext)
-            
+
     @cached_property
     def size(self):
-        """The dimensions of the resized image."""
-        # TODO
-        return {'width': 100, 'height': 100}
+        """The dimensions of the resized video."""
+        width, height = video.video_size(self.dst_path, converter=self.settings['video_converter'])
+        return {'width': width, 'height': height}
 
     @cached_property
     def thumb_size(self):
         """The dimensions of the thumbnail image."""
-        # TODO
-        return {'width': 100, 'height': 100}
+        return image.get_size(self.thumb_path)
 
+    @cached_property
+    def big_size(self):
+        """The dimensions of the original video."""
+        big_path = self.big
+        if big_path is None:
+            return 0
+        big_path = join(self.settings['destination'], self.path, big_path)
+        width, height = video.video_size(big_path, converter=self.settings['video_converter'])
+        return {'width': width, 'height': height}
 
 
 class Album:

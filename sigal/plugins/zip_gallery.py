@@ -55,7 +55,10 @@ def _generate_album_zip(album, recursive=False, archive=None, arch_path=''):
     """
     zip_gallery = album.settings['zip_gallery']
     
-    if not zip_gallery or len(album) == 0:
+    if not zip_gallery:
+        return False
+
+    if not recursive and len(album) == 0:
         return False
 
     zip_gallery = zip_gallery.format(album=album)

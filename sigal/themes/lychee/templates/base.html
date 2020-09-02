@@ -232,21 +232,27 @@
 	        let media_type = photoElement.attr('data-type');
 	        let img_medium = photoElement.attr('data-url');
 	        let img_medium2x = photoElement.attr('data-hidpi-url');
+	        let img_original = photoElement.attr('data-big-url');
 
 	        //let media_url = photoElement.attr('data-url');
 	        //let media_url = photoElement.attr('data-big-url');  // TODO ?
 
 	        let img_medium_dim = parseInt(photoElement.attr('data-width'), 10);
 	        let img_medium2x_dim = 2*img_medium_dim;
+	        let img_original_dim = photoElement.attr('data-big-width');
 
+
+	        if (media_type.indexOf('video') > -1) {
+		        html += lychee_html`<video width="auto" height="auto" id='image' controls class='${visibleControls === true ? '' : 'full'}' autobuffer ${autoplay ? 'autoplay' : ''}>
+    		        <source src='${img_medium}'>
+		        Your browser does not support the video tag.</video>`;
 
 /*
-	        if (media_type.indexOf('video') > -1) {
-		        html += lychee_html`<video width="auto" height="auto" id='image' controls class='${visibleControls === true ? '' : 'full'}' autobuffer ${autoplay ? 'autoplay' : ''} data-tabindex='${tabindex.get_next_tab_index()}'><source src='${media_url}'>Your browser does not support the video tag.</video>`
 	        } else if (media_type.indexOf('raw') > -1 && img_medium === '') {
 		        html += lychee_html`<img id='image' class='${visibleControls === true ? '' : 'full'}' src='img/placeholder.png' draggable='false' alt='big' data-tabindex='${tabindex.get_next_tab_index()}'>`
-	        } else {
 */
+
+	        } else {
 		        let img = '';
 
 		        // See if we have the thumbnail loaded...
@@ -279,7 +285,7 @@
                 // TODO overlay with exif data and filename, not critical
 		        //if (lychee.image_overlay) html += build_overlay_image(data);
 
-//	        }
+	        }
 
 	        html += `
 			        <div class='arrow_wrapper arrow_wrapper--previous'><a id='previous'>${build_iconic('caret-left')}</a></div>

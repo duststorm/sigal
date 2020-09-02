@@ -77,7 +77,7 @@
 	    
 	    $('#button_back_home').hide();
 	    $('#button_archive').attr('title', 'Download everything')
-	    {% if album.zip %}
+	    {% if album.all_zip %}
             $('#button_archive').click(downloadAll);
 	    {% else %}
 	        $('#button_archive').hide();

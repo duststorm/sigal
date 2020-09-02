@@ -11,6 +11,25 @@
 
     <link type="text/css" rel="stylesheet" href="{{ theme.url }}/css/main.css">
     <link type="text/css" rel="stylesheet" href="{{ theme.url }}/css/user.css">
+    
+    <style>
+        div .content .video {
+			&::before {
+				content: '';
+				position: absolute;
+				display: block;
+				height: 100%;
+				width: 100%;
+				background: url('{{ theme.url }}/img/play-icon.png') no-repeat 46% 50%;
+				transition: all 0.3s;
+				will-change: opacity, height;
+			}
+			&:hover::before,
+			&:focus::before, {
+				opacity: 0.75;
+			}
+		}
+    </style>
 
     {% block extra_head %}{% endblock extra_head %}
     {% include 'analytics.html' %}

@@ -36,6 +36,7 @@ from datetime import datetime
 from itertools import cycle
 from os.path import isfile, join, splitext
 from urllib.parse import quote as url_quote
+from urllib.parse import unquote as url_unquote
 
 from click import get_terminal_size, progressbar
 from natsort import natsort_keygen, ns
@@ -518,6 +519,18 @@ class Album:
                         random.choice(self.medias).thumbnail)
         except IndexError:
             return self.thumbnail
+
+    def get_media_by_thumb(self, thumb_name):
+        thumb_name = url_unquote(thumb_name)
+        thumb_name = os.path.basename(thumb_name)
+        for media in self.medias:
+            if os.path.basename(url_unquote(media.thumbnail)) == thumb_name:
+                return media
+        return None
+
+    @cached_property
+    def thumbnail_media(self):
+        return self.get_media_by_thumb(self.thumbnail)
 
     @property
     def breadcrumb(self):

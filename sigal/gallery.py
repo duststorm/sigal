@@ -657,7 +657,12 @@ class Gallery:
         with progressbar(albums.values(), label="%16s" % "Sorting media",
                          file=self.progressbar_target) as progress_albums:
             for album in progress_albums:
-                album.sort_medias(settings['medias_sort_attr'])
+                sort_attr = album.meta.get('medias_sort_attr', None)
+                if sort_attr:
+                    sort_attr = sort_attr[0]
+                else:
+                    sort_attr = settings['medias_sort_attr']
+                album.sort_medias(sort_attr)
 
         self.logger.debug('Albums:\n%r', albums.values())
         signals.gallery_initialized.send(self)

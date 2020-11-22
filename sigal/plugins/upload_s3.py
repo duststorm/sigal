@@ -60,6 +60,8 @@ def upload_s3(gallery, settings=None):
     # Upload the files
     with progressbar(upload_files, label="Uploading files to S3") as bar:
         for (f, size) in bar:
+            #if '.zip' in f:
+            #    continue
             if gallery.settings['upload_s3_options']['overwrite'] is False:
                 # Check if file was uploaded before
                 try:

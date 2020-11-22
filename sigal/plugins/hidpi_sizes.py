@@ -69,13 +69,18 @@ def get_hidpi_image(media):
     settings = media.settings
     filepath = media.src_path
 
-    logger.info('Processing high DPI image %s', filepath)
-    filename = os.path.split(filepath)[1]
-    filename_2x = get_hidpi_filename(filename)
-    outpath = os.path.join(settings['destination'], media.path)
-    outname = os.path.join(outpath, filename_2x)
-    
-    return generate_hidpi_image(filepath, outname, settings)
+    try:
+        logger.info('Processing high DPI image %s', filepath)
+        filename = os.path.split(filepath)[1]
+        filename_2x = get_hidpi_filename(filename)
+        outpath = os.path.join(settings['destination'], media.path)
+        outname = os.path.join(outpath, filename_2x)
+        
+        generate_hidpi_image(filepath, outname, settings)
+        return filename_2x
+    except:
+        import traceback
+        traceback.print_exc()
 
 def get_hidpi_video(media):
     # TODO

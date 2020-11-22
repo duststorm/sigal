@@ -32,7 +32,7 @@ from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PrefixLoader
 from jinja2.exceptions import TemplateNotFound
 
 from . import signals
-from .utils import url_from_path
+from .utils import url_from_path, album_url_from_path
 
 THEMES_PATH = os.path.normpath(os.path.join(
     os.path.abspath(os.path.dirname(__file__)), 'themes'))
@@ -107,7 +107,7 @@ class AbstractWriter:
             'settings': self.settings,
             'sigal_link': sigal_link,
             'theme': {'name': os.path.basename(self.theme),
-                      'url': url_from_path(os.path.relpath(self.theme_path,
+                      'url': album_url_from_path(os.path.relpath(self.theme_path,
                                                            album.dst_path))},
         }
 

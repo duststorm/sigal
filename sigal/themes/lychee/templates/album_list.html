@@ -42,6 +42,28 @@
 			</div>
 
             {% endfor %}
+            
+            <!-- Dirty customization for my own purposes -->
+            <div class="album downloadallalb">
+				  <span class="thumbimg"><img style="object-fit: cover;" class="ls-is-cached lazyloaded" src="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20122530%20-%20FF103312_.JPG" data-src="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20122530%20-%20FF103312_.JPG" data-srcset="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20113631%20-%20FF201305_.JPG 2x" alt="Photo thumbnail" data-overlay="false" draggable="false" srcset="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20113631%20-%20FF201305_.JPG 2x"></span>
+				  <span class="thumbimg"><img style="object-fit: cover;" class="ls-is-cached lazyloaded" src="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20111929%20-%20FF201267_.JPG" data-src="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20111929%20-%20FF201267_.JPG" data-srcset="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20122530%20-%20FF103249_.JPG 2x" alt="Photo thumbnail" data-overlay="false" draggable="false" srcset="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20122530%20-%20FF103249_.JPG 2x"></span>
+				  <span class="thumbimg"><img style="object-fit: cover;" class="lazyload" data-src="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20114245%20-%20FF103249_.JPG" data-srcset="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20114245%20-%20FF103249_.JPG 2x" alt="Download all" draggable="false" srcset="Trouwfotos/thumbnails/Laetitia%20%26%20Jonas%20-%20114245%20-%20FF103249_.JPG 2x"></span>
+
+				<div class="overlay">
+					<h1 title="Download all">Download all</h1>
+					<a>as zip file</a>
+					<svg class="iconic"><use xlink:href="#cloud-download"></use></svg>
+				</div>
+			
+				<div class="badges">
+					<a class="badge  icn-star"><svg class="iconic "><use xlink:href="#star"></use></svg></a>
+					<a class="badge  badge--not--hidden icn-share"><svg class="iconic "><use xlink:href="#eye"></use></svg></a>
+					<a class="badge "><svg class="iconic "><use xlink:href="#list"></use></svg></a>
+					<a class="badge "><svg class="iconic "><use xlink:href="#clock"></use></svg></a>
+					<a class="badge "><svg class="iconic "><use xlink:href="#lock-locked"></use></svg></a>
+				</div>
+			</div>
+			
         </div>
 
 {% endblock %}
@@ -83,6 +105,7 @@
 	    {% if album.all_zip %}
             $('#button_archive').attr('href', '{{ album.all_zip }}');
             
+            $('div .downloadallalb').click(downloadAll);
 	    {% else %}
 	        $('#button_archive').hide();
 	    {% endif %}

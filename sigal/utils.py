@@ -71,8 +71,21 @@ def url_from_path(path):
 
     if os.sep != '/':
         path = '/'.join(path.split(os.sep))
+
     return quote(path)
 
+#ROOT_URL = "https://ejibe-albums.s3-eu-west-1.amazonaws.com/"
+ROOT_URL = None
+def album_url_from_path(path):
+    if not ROOT_URL:
+        return url_from_path(path)
+
+    if os.sep != '/':
+        path = '/'.join(path.split(os.sep))
+
+    path = path.replace(ROOT_URL, '')
+    path = quote(path)
+    return ROOT_URL + path
 
 def read_markdown(filename):
     """Reads markdown file, converts output and fetches title and meta-data for

@@ -46,7 +46,7 @@ from .image import get_exif_tags, get_image_metadata, process_image
 from .settings import get_thumb
 from .utils import (Devnull, cached_property, check_or_create_dir, copy,
                     get_mime, is_valid_html5_video, read_markdown,
-                    url_from_path)
+                    url_from_path, album_url_from_path)
 from .video import process_video
 from .writer import AlbumListPageWriter, AlbumPageWriter
 
@@ -103,7 +103,8 @@ class Media:
     @property
     def url(self):
         """URL of the media."""
-        return url_from_path(self.filename)
+        #return url_from_path(self.filename)
+        return album_url_from_path(self.filename)
 
     @property
     def big(self):
@@ -127,7 +128,8 @@ class Media:
     def big_url(self):
         """URL of the original media."""
         if self.big is not None:
-            return url_from_path(self.big)
+            #return url_from_path(self.big)
+            return album_url_from_path(self.big)
 
     @property
     def thumbnail(self):
@@ -152,7 +154,8 @@ class Media:
             except Exception as e:
                 self.logger.error('Failed to generate thumbnail: %s', e)
                 return
-        return url_from_path(self.thumb_name)
+        #return url_from_path(self.thumb_name)
+        return album_url_from_path(self.thumb_name)
 
     def _get_metadata(self):
         """Get image metadata from filename.md: title, description, meta."""
@@ -467,6 +470,9 @@ class Album:
 
     @property
     def thumbnail(self):
+        return album_url_from_path(self.get_thumbnail_path())
+
+    def get_thumbnail_path(self):
         """Path to the thumbnail of the album."""
 
         if self._thumbnail:
@@ -477,8 +483,7 @@ class Album:
         thumbnail = self.meta.get('thumbnail', [''])[0]
 
         if thumbnail and isfile(join(self.src_path, thumbnail)):
-            self._thumbnail = url_from_path(join(
-                self.name, get_thumb(self.settings, thumbnail)))
+            self._thumbnail = join(self.name, get_thumb(self.settings, thumbnail))
             self.logger.debug("Thumbnail for %r : %s", self, self._thumbnail)
             return self._thumbnail
         else:

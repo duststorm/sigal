@@ -19,6 +19,15 @@ Settings (all settings are wrapped in ``upload_s3_options`` dict):
   cache control should be set by default
 - ``media_max_age``: Optional, Integer indicates the number of seconds that
   cache control hould be set for media files
+- ``credentials_profile``: Optional, String that refers to profile to use in
+  ~/.aws/credentials (defaults to "default")
+- ``enable_inline``: Optional, Boolean that when set to True will set the
+  ContentDisposition and mime type in Content-Type metadata fields of image files,
+  so that they can be inlined on a webpage.
+- ``md5_hash``: Optional, Boolean that when set to True uses MD5 hashes to 
+  determine whether a file has to be re-uploaded (defaults to False)
+  ~/.aws/credentials (defaults to "False")
+
 
 """
 

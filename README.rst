@@ -1,9 +1,9 @@
 Sigal - Simple Static Gallery Generator
 =======================================
 
-.. image:: https://secure.travis-ci.org/saimn/sigal.png?branch=master
-   :target: https://travis-ci.org/saimn/sigal
-   :alt: Travis-ci: continuous integration status.
+.. image:: https://github.com/saimn/sigal/workflows/Run%20unit%20tests/badge.svg
+   :target: https://github.com/saimn/sigal/actions
+   :alt: CI Status
 
 .. image:: https://codecov.io/gh/saimn/sigal/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/saimn/sigal
@@ -52,4 +52,4 @@ Javascript libraries:
 .. _colorbox demo: http://saimon.org/sigal-demo/colorbox/
 .. _photoswipe demo: http://saimon.org/sigal-demo/photoswipe/
 .. _webchat: http://webchat.freenode.net/?channels=sigal
-.. _Jinja2: http://jinja.pocoo.org/
+.. _Jinja2: https://palletsprojects.com/p/jinja/

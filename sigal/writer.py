@@ -20,12 +20,12 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import imp
+import importlib
 import logging
 import os
+import shutil
 import sys
 import types
-from distutils.dir_util import copy_tree
 
 import jinja2
 from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PrefixLoader
@@ -80,7 +80,7 @@ class AbstractWriter:
         # handle optional filters.py
         filters_py = os.path.join(self.theme, 'filters.py')
         if os.path.exists(filters_py):
-            mod = imp.load_source('filters', filters_py)
+            mod = importlib.import_module(filters_py)
             for name in dir(mod):
                 if isinstance(getattr(mod, name), types.FunctionType):
                     env.filters[name] = getattr(mod, name)
@@ -88,13 +88,17 @@ class AbstractWriter:
         try:
             self.template = env.get_template(self.template_file)
         except TemplateNotFound:
-            self.logger.error('The template %s was not found in template folder %s.',
-                              self.template_file, theme_relpath)
+            self.logger.error(
+                'The template %s was not found in template folder %s.',
+                self.template_file, theme_relpath)
             sys.exit(1)
 
         # Copy the theme files in the output dir
         self.theme_path = os.path.join(self.output_dir, 'static')
-        copy_tree(os.path.join(self.theme, 'static'), self.theme_path)
+        if os.path.isdir(self.theme_path):
+            shutil.rmtree(self.theme_path)
+        # FIXME: use dirs_exist_ok when minimum Python is 3.8
+        shutil.copytree(os.path.join(self.theme, 'static'), self.theme_path)
 
     def generate_context(self, album):
         """Generate the context dict for the given path."""

@@ -34,6 +34,7 @@ Settings (all settings are wrapped in ``upload_s3_options`` dict):
 import logging
 import os
 import mimetypes
+import tempfile
 
 from click import progressbar
 
@@ -47,9 +48,26 @@ def get_s3_key(gallery, f):
         return os.path.join(subfolder, f)
     return f
 
+def handle_file(gallery, f, key, size, s3, bucket_name, bucket):
+    import botocore.exceptions
+    if gallery.settings['upload_s3_options']['overwrite'] is False:
+        # Check if file was uploaded before
+        try:
+            key_obj = s3.meta.client.head_object(Bucket=bucket_name, Key=key)
+            upload_file_if_changed(gallery, f, size, key_obj, bucket, s3)
+        except botocore.exceptions.ClientError:
+            # TODO can also be because of access denied error, but mostly you want to silence this error
+            import traceback
+            traceback.print_exc()
+            # File does not exist
+            upload_file(gallery, bucket, f, key)
+
+    else:
+        # Force overwrite file
+        upload_file(gallery, bucket, f)
+
 def upload_s3(gallery, settings=None):
     import boto3
-    import botocore.exceptions
     upload_files = []
 
     # Get local files
@@ -66,25 +84,25 @@ def upload_s3(gallery, settings=None):
     bucket_name = gallery.settings['upload_s3_options']['bucket']
     bucket = s3.Bucket(bucket_name)
 
+    # Create robots.txt to fend off search engine crawlers
+    if gallery.settings['upload_s3_options'].get('create_robots_txt', False):
+        logger.debug("Creating robots.txt")
+        with tempfile.TemporaryDirectory() as tmp_dir_path:
+            robots_txt_file = os.path.join(tmp_dir_path, 'robots.txt')
+            with open(robots_txt_file, 'w') as f:
+                f.write("""User-agent: *
+Disallow: / """)
+            # robots.txt lives only at the root of the domain (bucket)
+            key = "robots.txt"
+            size = os.path.getsize(robots_txt_file)
+            handle_file(gallery, robots_txt_file, key, size, s3, bucket_name, bucket)
+
     # Upload the files
     with progressbar(upload_files, label="Uploading files to S3") as bar:
         for (f, size) in bar:
-            if gallery.settings['upload_s3_options']['overwrite'] is False:
-                # Check if file was uploaded before
-                try:
-                    key = s3.meta.client.head_object(Bucket=bucket_name, Key=get_s3_key(gallery, f))
-                    upload_file_if_changed(gallery, f, size, key, bucket, s3)
-                except botocore.exceptions.ClientError:
-                    # TODO can also be because of access denied error
-                    import traceback
-                    traceback.print_exc()
-                    # File does not exist
-                    upload_file(gallery, bucket, f)
+            key = get_s3_key(gallery, f)
+            handle_file(gallery, f, key, size, s3, bucket_name, bucket)
 
-            else:
-                # Force overwrite file
-                upload_file(gallery, bucket, f)
-                
 def upload_file_if_changed(gallery, f, size, key, bucket, s3):
     metadata = {}
     try:
@@ -101,15 +119,15 @@ def upload_file_if_changed(gallery, f, size, key, bucket, s3):
         cache_metadata = generate_cache_metadata(gallery, f)
         cc = key.get('CacheControl', "")
         if cc != cache_metadata:
-            logger.debug('Cache policy differs, updating metadata of %s', get_s3_key(gallery, f))
+            logger.debug('Cache policy differs, updating metadata of %s', key)
 
             m = key["Metadata"]
             m["Cache-Control"] = cache_metadata
             extra_kwargs = {}
             if gallery.settings['upload_s3_options'].get('enable_inline', False):
                 extra_kwargs["ContentDisposition"] = 'inline'
-            s3.meta.client.copy_object(Bucket=bucket.name, Key=get_s3_key(gallery, f),
-                                       CopySource=os.path.join(bucket.name, get_s3_key(gallery, f)),
+            s3.meta.client.copy_object(Bucket=bucket.name, Key=key,
+                                       CopySource=os.path.join(bucket.name, key),
                                        CacheControl=cache_metadata,
                                        ContentType=get_mime_type(f),
                                        Metadata=m,
@@ -166,7 +184,7 @@ def get_md5_content_str(f_obj):
 def get_mime_type(file_path):
     return mimetypes.guess_type(file_path)[0]
 
-def upload_file(gallery, bucket, f, file_md5_hash=None):
+def upload_file(gallery, bucket, f, key, file_md5_hash=None):
     logger.debug("Uploading file %s" % (f))
     
     cache_metadata = generate_cache_metadata(gallery, f)
@@ -189,7 +207,7 @@ def upload_file(gallery, bucket, f, file_md5_hash=None):
             extra_kwargs["Metadata"] = { "md5chksum": file_md5_hash }
 
         bucket.put_object(Body=f_obj,
-                      Key=get_s3_key(gallery, f),
+                      Key=key,
                       ACL=acl_policy,
                       ContentType=get_mime_type(f),
                       **extra_kwargs)

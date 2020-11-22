@@ -32,6 +32,11 @@ from sigal import signals
 
 logger = logging.getLogger(__name__)
 
+def get_s3_key(gallery, f):
+    subfolder = gallery.settings['upload_s3_options'].get('bucket_subfolder', '')
+    if subfolder:
+        return os.path.join(subfolder, f)
+    return f
 
 def upload_s3(gallery, settings=None):
     import boto3
@@ -58,10 +63,12 @@ def upload_s3(gallery, settings=None):
             if gallery.settings['upload_s3_options']['overwrite'] is False:
                 # Check if file was uploaded before
                 try:
-                    key = s3.meta.client.head_object(Bucket=bucket_name, Key=f)
-                    
+                    key = s3.meta.client.head_object(Bucket=bucket_name, Key=get_s3_key(gallery, f))
                     upload_file_if_changed(gallery, f, size, key, bucket, s3)
                 except botocore.exceptions.ClientError:
+                    # TODO can also be because of access denied error
+                    import traceback
+                    traceback.print_exc()
                     # File does not exist
                     upload_file(gallery, bucket, f)
 
@@ -85,15 +92,15 @@ def upload_file_if_changed(gallery, f, size, key, bucket, s3):
         cache_metadata = generate_cache_metadata(gallery, f)
         cc = key.get('CacheControl', "")
         if cc != cache_metadata:
-            logger.debug('Cache policy differs, updating metadata of %s', f)
+            logger.debug('Cache policy differs, updating metadata of %s', get_s3_key(gallery, f))
 
             m = key["Metadata"]
             m["Cache-Control"] = cache_metadata
             extra_kwargs = {}
             if gallery.settings['upload_s3_options'].get('enable_inline', False):
                 extra_kwargs["ContentDisposition"] = 'inline'
-            s3.meta.client.copy_object(Bucket=bucket.name, Key=f, 
-                                       CopySource=os.path.join(bucket.name, f),
+            s3.meta.client.copy_object(Bucket=bucket.name, Key=get_s3_key(gallery, f),
+                                       CopySource=os.path.join(bucket.name, get_s3_key(gallery, f)),
                                        CacheControl=cache_metadata,
                                        ContentType=get_mime_type(f),
                                        Metadata=m,
@@ -173,7 +180,7 @@ def upload_file(gallery, bucket, f, file_md5_hash=None):
             extra_kwargs["Metadata"] = { "md5chksum": file_md5_hash }
 
         bucket.put_object(Body=f_obj,
-                      Key=f,
+                      Key=get_s3_key(gallery, f),
                       ACL=acl_policy,
                       ContentType=get_mime_type(f),
                       **extra_kwargs)

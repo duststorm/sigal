@@ -41,7 +41,13 @@
     {
         // Download original of current photo
         // TODO handle gracefully when no photo or no big-url
-        window.open(photo_getCurrent().attr('data-big-url'));
+        //window.open(photo_getCurrent().attr('data-big-url'));
+        download_file(photo_getCurrent().attr('data-big-url'));
+    }
+
+    function download_album()
+    {
+        download_file('{{ album.zip }}');
     }
 
 	// init
@@ -54,12 +60,14 @@
 	    
 	    $('#button_back').click(photo_hide);
 	    $('#button_back_home').click(album_up);
+	    //$('#button_download').click(download_photo);
 	    {% if album.zip %}
-    	    $('#button_download').click(download_photo);
+    	    $('#button_archive').attr('href', '{{ album.zip }}');
+    	    $('#button_archive').attr('download', '{{ album.name }}');
 	    {% else %}
 	        $('#button_download').hide();
 	    {% endif %}
-	    
+
         justify(photos_get());
 
         // TODO move much of this to base.html?

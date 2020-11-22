@@ -10,6 +10,9 @@
         div .content {background: linear-gradient(rgba(29, 29, 29, 0.75), rgba(29, 29, 29, 0.75), rgba(29, 29, 29, 1)), url("{{ album.meta.background_image[0] | urlencode }}");
                       background-size: cover; background-repeat: no-repeat; background-attachment: fixed;}
         {% endif %}
+        
+        div .downloadallalb .overlay { width: 100% !important; height: 100% !important; bottom: 0px !important; margin: 0px !important; background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)) !important; }
+        div .downloadallalb .overlay .iconic { fill: rgba(175, 175, 175, 0.75) !important; display: block !important; margin: auto !important; width: 55% !important; height: 55% !important;}
     </style>
 
 {% endblock %}
@@ -49,7 +52,10 @@
     {
         let el = $(event.currentTarget);
         let url = el.attr('data-url');
-        window.location.href = url;
+        if (typeof url !== typeof undefined && url !== false)
+        {
+            window.location.href = url;
+        }
     };
     
     function album_up()
@@ -59,7 +65,8 @@
 
     function downloadAll()
     {
-        window.open('{{ album.all_zip }}');
+        //window.open('{{ album.all_zip }}');
+        download_file('{{ album.all_zip }}');
     }
 
 	// init
@@ -67,13 +74,15 @@
 	{
 
         $("div .album").each(function (i) {
-            $(this).click(onAlbumClicked);
+            alert("Resolution" + window.devicePixelRatio);
+            //$(this).click(onAlbumClicked);
 	    });
 	    
 	    $('#button_back_home').hide();
 	    $('#button_archive').attr('title', 'Download everything')
 	    {% if album.all_zip %}
-            $('#button_archive').click(downloadAll);
+            $('#button_archive').attr('href', '{{ album.all_zip }}');
+            
 	    {% else %}
 	        $('#button_archive').hide();
 	    {% endif %}

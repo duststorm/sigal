@@ -28,6 +28,16 @@
 			&:focus::before, {
 				opacity: 0.75;
 			}
+
+			@media only screen and ( min-resolution: 320dpi ) {
+			    .header .button {
+			        width: 35px;
+			        height: 35px;
+			    }
+			    .header__title {
+			        font-size: 25px;
+			    }
+		    }
 		}
 		
 		video { outline: none; }
@@ -78,7 +88,7 @@
 
             <a class="header__title header__title--editable">{{ album.title }}</a>
 
-            <a class="button" id="button_archive" title="Download Album in original size">
+            <a class="button" id="button_archive" title="Download Album in original size" download>
                 <svg class="iconic"><use xlink:href="#cloud-download"></use></svg>
             </a>
             <a class="button" id="button_fs_album_enter" title="Enter Fullscreen">
@@ -97,7 +107,7 @@
 
             <a class="header__title header__title--editable">{{ album.title }}</a>
 
-            <a class="button" id="button_download" title="Download original size photo">
+            <a class="button" id="button_download" title="Download original size photo" download>
                 <svg class="iconic"><use xlink:href="#cloud-download"></use></svg>
             </a>
             <a class="button" id="button_fs_enter" title="Enter Fullscreen">
@@ -795,6 +805,8 @@
 		    // TODO required here because at init these are not created yet
             $('.arrow_wrapper--previous').click(photo_previous);
             $('.arrow_wrapper--next').click(photo_next);
+            
+            $('#button_download').attr('href', currPhoto.attr('data-big-url'));
 
 		    photo_onresize();
 
@@ -907,8 +919,8 @@
 	        preventNextHeaderToggle : false
         };
         
-        lychee_swipe_tolerance_x = 150;  // tolerance for navigating when swiping images to the left and right on mobile
-        lychee_swipe_tolerance_y = 250; // tolerance for navigating when swiping images up and down
+        lychee_swipe_tolerance_x = 120;  // tolerance for navigating when swiping images to the left and right on mobile
+        lychee_swipe_tolerance_y = 180; // tolerance for navigating when swiping images up and down
 
         function swipe_start(obj)
         {
@@ -1096,6 +1108,18 @@
 				});
 			}*/
 		};
+		
+		function download_file(filePath, suggestedName)
+		{
+            var link=document.createElement('a');
+            link.href = filePath;
+            if (suggestedName === undefined)
+                suggestedName = filePath.substr(filePath.lastIndexOf('/') + 1);
+            link.download = suggestedName;
+            link.target="_blank";
+            link.click();
+            // TODO remove element?
+        }
 
     </script>
     </div>

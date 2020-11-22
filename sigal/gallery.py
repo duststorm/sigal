@@ -24,7 +24,6 @@
 # IN THE SOFTWARE.
 
 import fnmatch
-import locale
 import logging
 import multiprocessing
 import os
@@ -404,13 +403,17 @@ class Album:
                 root_path = self.path if self.path != '.' else ''
                 if albums_sort_attr.startswith("meta."):
                     meta_key = albums_sort_attr.split(".", 1)[1]
-                    key = natsort_keygen(key=lambda s:
-                        self.gallery.albums[join(root_path, s)].meta.get(meta_key, [''])[0],
-                        alg=ns.LOCALE)
+
+                    def sort_key(s):
+                        album = self.gallery.albums[join(root_path, s)]
+                        return album.meta.get(meta_key, [''])[0]
+
                 else:
-                    key = natsort_keygen(key=lambda s:
-                        getattr(self.gallery.albums[join(root_path, s)], albums_sort_attr),
-                        alg=ns.LOCALE)
+                    def sort_key(s):
+                        album = self.gallery.albums[join(root_path, s)]
+                        return getattr(album, albums_sort_attr)
+
+                key = natsort_keygen(key=sort_key, alg=ns.LOCALE)
             else:
                 key = natsort_keygen(alg=ns.LOCALE)
 
@@ -425,11 +428,13 @@ class Album:
                 key = lambda s: s.date or datetime.now()
             elif medias_sort_attr.startswith('meta.'):
                 meta_key = medias_sort_attr.split(".", 1)[1]
-                key = natsort_keygen(key=lambda s: s.meta.get(meta_key, [''])[0],
-                                    alg=ns.LOCALE)
+                key = natsort_keygen(
+                    key=lambda s: s.meta.get(meta_key, [''])[0],
+                    alg=ns.LOCALE)
             else:
-                key = natsort_keygen(key=lambda s: getattr(s, medias_sort_attr),
-                                    alg=ns.LOCALE)
+                key = natsort_keygen(
+                    key=lambda s: getattr(s, medias_sort_attr),
+                    alg=ns.LOCALE)
 
             self.medias.sort(key=key,
                              reverse=self.settings['medias_sort_reverse'])
@@ -485,16 +490,23 @@ class Album:
             # find and return the first landscape image
             for f in self.medias:
                 ext = splitext(f.filename)[1]
-                if ext.lower() in self.settings['img_extensions']:
-                    # Use f.size if available as it is quicker (in cache), but
-                    # fallback to the size of src_path if dst_path is missing
-                    size = f.size
-                    if size is None:
-                        size = f.file_metadata['size']
+                if ext.lower() not in self.settings['img_extensions']:
+                    continue
 
-                    if size['width'] > size['height']:
+                # Use f.size if available as it is quicker (in cache), but
+                # fallback to the size of src_path if dst_path is missing
+                size = f.size
+                if size is None:
+                    size = f.file_metadata['size']
+
+                if size['width'] > size['height']:
+                    try:
                         self._thumbnail = (url_quote(self.name) + '/' +
                                            f.thumbnail)
+                    except Exception as e:
+                        self.logger.info("Failed to get thumbnail for %s: %s",
+                                         f.filename, e)
+                    else:
                         self.logger.debug(
                             "Use 1st landscape image as thumbnail for %r : %s",
                             self, self._thumbnail)
@@ -504,12 +516,19 @@ class Album:
             if not self._thumbnail and self.medias:
                 for media in self.medias:
                     if media.thumbnail is not None:
-                        self._thumbnail = (url_quote(self.name) + '/' +
-                                           media.thumbnail)
-                        break
+                        try:
+                            self._thumbnail = (url_quote(self.name) + '/' +
+                                               media.thumbnail)
+                        except Exception as e:
+                            self.logger.info(
+                                "Failed to get thumbnail for %s: %s",
+                                media.filename, e
+                            )
+                        else:
+                            break
                 else:
                     self.logger.warning("No thumbnail found for %r", self)
-                    return None
+                    return
 
                 self.logger.debug("Use the 1st image as thumbnail for %r : %s",
                                   self, self._thumbnail)
@@ -527,7 +546,6 @@ class Album:
                         return self._thumbnail
 
         self.logger.error('Thumbnail not found for %r', self)
-        return None
 
     @property
     def random_thumbnail(self):
@@ -583,7 +601,6 @@ class Album:
         """Placeholder ZIP method.
         The ZIP logic is controlled by the zip_gallery plugin
         """
-        return None
 
 
 class Gallery:

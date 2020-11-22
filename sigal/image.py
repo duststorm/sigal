@@ -226,10 +226,17 @@ def get_exif_data(filename):
     img = _read_image(filename)
 
     try:
-        exif = img._getexif() or {}
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            exif = img._getexif() or {}
     except ZeroDivisionError:
         logger.warning('Failed to read EXIF data.')
         return None
+
+    for w in caught_warnings:
+        fname = (filename.filename if isinstance(filename, PILImage.Image)
+                 else filename)
+        logger.warning(f'PILImage reported a warning for file {fname}\n'
+                       f'{w.category}: {w.message}')
 
     data = {TAGS.get(tag, tag): value for tag, value in exif.items()}
 
@@ -238,7 +245,6 @@ def get_exif_data(filename):
             data['GPSInfo'] = {GPSTAGS.get(tag, tag): value
                                for tag, value in data['GPSInfo'].items()}
         except AttributeError:
-            logger = logging.getLogger(__name__)
             logger.info('Failed to get GPS Info')
             del data['GPSInfo']
     return data

@@ -50,7 +50,8 @@ def get_s3_key(gallery, f):
 
 def handle_file(gallery, f, key, size, s3, bucket_name, bucket):
     import botocore.exceptions
-    if gallery.settings['upload_s3_options']['overwrite'] is False:
+    if not gallery.settings['upload_s3_options']['overwrite'] and \
+       os.path.splitext(key)[1] != '.html':
         # Check if file was uploaded before
         try:
             key_obj = s3.meta.client.head_object(Bucket=bucket_name, Key=key)
@@ -64,7 +65,7 @@ def handle_file(gallery, f, key, size, s3, bucket_name, bucket):
 
     else:
         # Force overwrite file
-        upload_file(gallery, bucket, f)
+        upload_file(gallery, bucket, f, key)
 
 def upload_s3(gallery, settings=None):
     import boto3
@@ -104,7 +105,8 @@ Disallow: / """)
             #    continue
 
             key = get_s3_key(gallery, f)
-            handle_file(gallery, f, key, size, s3, bucket_name, bucket)
+            if os.path.splitext(key)[1] == '.html':
+                handle_file(gallery, f, key, size, s3, bucket_name, bucket)
 
 def upload_file_if_changed(gallery, f, size, key, bucket, s3):
     metadata = {}
